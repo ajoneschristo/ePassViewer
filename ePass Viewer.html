@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ePass MCL Coalnet Viewer</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root {
+  /* Light theme (default) */
+  --bg:       #f0f2f5;
+  --surface:  #ffffff;
+  --raise:    #f7f8fa;
+  --edge:     #dde3ec;
+  --line:     #c8d2e0;
+  --amber:    #d4860a;
+  --amber-lo: #fff3d6;
+  --green:    #1a9e5c;
+  --green-lo: #e6f7ef;
+  --red:      #c0392b;
+  --blue:     #1a6fc4;
+  --dim:      #7a8fa8;
+  --mid:      #4a6080;
+  --text:     #1a2436;
+  --mono:     'IBM Plex Mono', monospace;
+  --sans:     'IBM Plex Sans', sans-serif;
+}
+body.dark {
+  --bg:       #0e1117;
+  --surface:  #161b24;
+  --raise:    #1c2333;
+  --edge:     #253047;
+  --line:     #2e3d56;
+  --amber:    #f0a500;
+  --amber-lo: #3a2800;
+  --green:    #2fc97e;
+  --green-lo: #0d2e1e;
+  --red:      #e05454;
+  --blue:     #4a9eff;
+  --dim:      #5a7299;
+  --mid:      #8ba3c2;
+  --text:     #dde6f4;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { font-size:16px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100svh;
+  -webkit-font-smoothing: antialiased;
+  transition: background .2s, color .2s;
+  overscroll-behavior-y: auto;
+}
+
+/* ── THEME TOGGLE ── */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.theme-toggle-label {
+  font-size: 10px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  user-select: none;
+}
+.toggle-track {
+  width: 36px; height: 20px;
+  background: var(--line);
+  border-radius: 10px;
+  position: relative;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.toggle-track.on { background: var(--amber); }
+.toggle-thumb {
+  position: absolute;
+  width: 14px; height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: left .18s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+}
+.toggle-track.on .toggle-thumb { left: 19px; }
+
+/* ── HEADER — shown only on drop screen ── */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--edge);
+}
+.app-header.hidden { display: none; }
+.mcl-badge {
+  width: 32px; height: 32px;
+  background: var(--amber);
+  color: #fff;
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 10px;
+  display: flex; align-items: center; justify-content: center;
+  letter-spacing: .5px;
+  flex-shrink: 0;
+  clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+}
+.app-name { flex: 1; min-width: 0; }
+.app-name h1 {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  letter-spacing: .3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.app-name p {
+  font-size: 10px; color: var(--dim); letter-spacing: .5px;
+  text-transform: uppercase; margin-top: 1px;
+}
+.header-date {
+  font-family: var(--mono); font-size: 11px; color: var(--amber);
+  text-align: right; letter-spacing: .5px; flex-shrink: 0;
+  max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.header-date span { display: block; color: var(--dim); font-size: 10px; margin-top: 1px; }
+
+/* ── EMBEDDED THEME TOGGLE (in report-meta row) ── */
+.theme-icon-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--raise);
+  border: 1px solid var(--line);
+  padding: 6px 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color .15s;
+}
+.theme-icon-btn:active { border-color: var(--amber); }
+.theme-icon-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* ── UPLOAD ZONE ── */
+#drop-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100svh - 69px);
+  padding: 32px 20px;
+  gap: 24px;
+}
+.drop-box {
+  width: 100%;
+  max-width: 400px;
+  border: 1.5px dashed var(--line);
+  padding: 44px 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+.drop-box:hover, .drop-box.over {
+  border-color: var(--amber);
+  background: var(--amber-lo);
+}
+.drop-icon {
+  font-size: 40px;
+  margin-bottom: 14px;
+  display: block;
+}
+.drop-box h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.drop-box p {
+  font-size: 13px;
+  color: var(--dim);
+}
+.drop-tags {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  color: var(--mid);
+  letter-spacing: .4px;
+}
+.privacy-note {
+  font-size: 11px;
+  color: var(--edge);
+  letter-spacing: .3px;
+}
+
+/* ── MAIN DASHBOARD ── */
+#dashboard {
+  display: none;
+  padding: 10px 8px calc(env(safe-area-inset-bottom, 0px) + 20px);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ── REPORT META ── */
+.report-meta {
+  background: var(--surface);
+  border: 1px solid var(--edge);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.meta-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 3px; }
+.meta-val   { font-family: var(--mono); font-size: 13px; color: var(--text); }
+.open-new-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--mid);
+  font-family: var(--sans);
+  font-size: 12px;
+  padding: 7px 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color .15s, color .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.open-new-btn:hover { border-color: var(--amber); color: var(--amber); }
+.open-new-btn svg { width:13px; height:13px; }
+
+/* ── TIME FILTER CARD ── */
+.time-card {
+  background: var(--surface);
+  border: 1px solid var(--edge);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.time-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.section-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.section-label svg { width:13px; height:13px; color:var(--amber); }
+.time-clear {
+  background: none; border: none;
+  font-size: 11px; color: var(--dim);
+  cursor: pointer; letter-spacing: .4px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 4px 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.time-clear:hover { color: var(--red); }
+
+.time-display-row {
+  display: flex;
+  align-items: stretch;
+}
+.time-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--raise);
+  border: 1px solid var(--line);
+  padding: 12px 16px;
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+  transition: border-color .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.time-pill:active { border-color: var(--amber); }
+.time-pill-val {
+  font-family: var(--mono);
+  font-size: 22px;
+  color: var(--amber);
+  letter-spacing: 1px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.time-pill-val.allday { color: var(--dim); font-size: 16px; }
+.time-pill svg { width:18px; height:18px; color:var(--dim); flex-shrink:0; }
+
+/* ── STATS GRID — removed, replaced by inline info bar ── */
+
+/* "Data as of" inline bar above area table */
+.asof-bar {
+  background: var(--surface);
+  border: 1px solid var(--edge);
+  border-top: 3px solid var(--blue);
+  border-bottom: none;
+  padding: 10px 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.asof-bar-time {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--blue);
+  letter-spacing: .5px;
+  line-height: 1;
+}
+.asof-bar-time.warn { color: var(--red); }
+.asof-bar-date {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--mid);
+}
+.asof-bar-warn {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--red);
+  width: 100%;
+  margin-top: 2px;
+}
+.asof-bar-label {
+  font-size: 10px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  margin-right: 2px;
+}
+
+/* Cross-check pill — kept for internal verification */
+.crosscheck {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 7px;
+  border: 1px solid;
+  letter-spacing: .3px;
+}
+.crosscheck.ok   { color: var(--green); border-color: var(--green); background: var(--green-lo); }
+.crosscheck.warn { color: var(--red);   border-color: var(--red);   background: rgba(192,57,43,.08); }
+
+/* ── CLOCK PICKER MODAL ── */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.72);
+  z-index: 200;
+  display: none;
+  align-items: flex-end;        /* sheet slides up from bottom on mobile */
+  justify-content: center;
+}
+.modal-backdrop.open { display: flex; }
+
+.clock-sheet {
+  background: var(--surface);
+  border: 1px solid var(--edge);
+  border-bottom: none;
+  width: 100%;
+  max-width: 420px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  animation: slideUp .22s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); opacity:0; } to { transform: translateY(0); opacity:1; } }
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid var(--edge);
+}
+.sheet-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mid);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+.sheet-close {
+  background: none; border: none;
+  color: var(--dim); font-size: 20px;
+  cursor: pointer; line-height: 1;
+  padding: 0 2px;
+}
+.sheet-close:hover { color: var(--text); }
+
+/* ── DIGITAL TIME DISPLAY inside sheet ── */
+.clock-time-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 20px 20px 0;
+}
+.clock-seg {
+  font-family: var(--mono);
+  font-size: 58px;
+  font-weight: 600;
+  background: var(--raise);
+  border: 2px solid var(--line);
+  padding: 8px 16px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--dim);
+  transition: border-color .15s, color .15s;
+  min-width: 96px;
+  text-align: center;
+  user-select: none;
+}
+.clock-seg.active {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+.clock-colon {
+  font-family: var(--mono);
+  font-size: 50px;
+  font-weight: 600;
+  color: var(--dim);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.ampm-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-self: center;
+}
+.ampm-btn {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 12px;
+  background: var(--raise);
+  border: 2px solid var(--line);
+  color: var(--dim);
+  cursor: pointer;
+  letter-spacing: .5px;
+  transition: all .15s;
+}
+.ampm-btn.active {
+  background: var(--amber-lo);
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+/* ── ANALOG CLOCK FACE ── */
+.clock-face-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 14px 20px 8px;
+}
+.clock-face {
+  width: min(320px, 88vw);
+  height: min(320px, 88vw);
+  position: relative;
+  border-radius: 50%;
+  background: var(--raise);
+  border: 3px solid var(--line);
+  touch-action: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+/* Clock tick marks */
+.clock-face::before {
+  content: '';
+  position: absolute; inset: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--edge);
+}
+/* Center dot */
+.clock-face::after {
+  content: '';
+  position: absolute;
+  width: 10px; height: 10px;
+  background: var(--amber);
+  border-radius: 50%;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+}
+.clock-hand {
+  position: absolute;
+  bottom: 50%; left: 50%;
+  transform-origin: bottom center;
+  border-radius: 4px 4px 0 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.clock-hand.hour-hand {
+  width: 5px;
+  height: 28%;
+  background: var(--amber);
+  margin-left: -2.5px;
+}
+.clock-hand.minute-hand {
+  width: 3px;
+  height: 38%;
+  background: var(--mid);
+  margin-left: -1.5px;
+}
+.clock-hand.select-hand {
+  width: 3px;
+  height: 44%;
+  background: var(--amber);
+  margin-left: -1.5px;
+  opacity: .9;
+}
+.clock-number {
+  position: absolute;
+  font-family: var(--mono);
+  font-size: clamp(18px, 5.5vw, 24px);
+  font-weight: 700;
+  color: var(--mid);
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+  transition: color .1s;
+}
+.clock-number.hi { color: var(--amber); font-weight: 700; }
+.clock-select-dot {
+  position: absolute;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--amber);
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* minute mode small numbers ring label */
+.clock-mode-label {
+  text-align: center;
+  font-size: 10px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: 6px;
+  font-family: var(--mono);
+}
+
+/* ── SHEET FOOTER ── */
+.sheet-footer {
+  display: flex;
+  gap: 1px;
+  background: var(--edge);
+  border-top: 1px solid var(--edge);
+  margin-top: 14px;
+}
+.sheet-btn {
+  flex: 1;
+  padding: 14px;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  letter-spacing: .3px;
+  transition: background .15s;
+}
+.sheet-btn.cancel { background: var(--raise);   color: var(--dim); }
+.sheet-btn.cancel:hover { background: var(--edge); color: var(--text); }
+.sheet-btn.ok     { background: var(--amber);   color: #000; }
+.sheet-btn.ok:hover { background: #ffc02e; }
+
+/* ── MULTI-DAY SECTION ── */
+/* ── PROVISIONAL WATERMARK ── */
+.provisional-mark {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 6px 0 2px;
+  user-select: none;
+}
+.multiday-tabs-wrap {
+  margin-bottom: 12px;
+}
+.multiday-tabs-label {
+  font-size: 10px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  font-family: var(--sans);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.multiday-tabs-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--edge);
+}
+.multiday-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.multiday-tabs::-webkit-scrollbar { display: none; }
+.multiday-tab {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  background: var(--raise);
+  color: var(--dim);
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: .4px;
+  -webkit-tap-highlight-color: transparent;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.multiday-tab:hover:not(.active) {
+  border-color: var(--mid);
+  color: var(--mid);
+}
+.multiday-tab.active {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: #000;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0,0,0,.15);
+}
+.area-section {
+  margin-bottom: 16px;
+}
+.area-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+.area-section-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1;
+  justify-content: center;
+}
+.area-section-title svg { width:13px; height:13px; color:var(--amber); flex-shrink:0; }
+.area-btn-group { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+/* Trips toggle switch */
+.trips-switch-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.trips-switch-label {
+  font-size: 11px;
+  color: var(--dim);
+  font-family: var(--sans);
+  letter-spacing: .3px;
+}
+.switch-track {
+  width: 34px; height: 19px;
+  background: var(--line);
+  border-radius: 10px;
+  position: relative;
+  transition: background .18s;
+  flex-shrink: 0;
+}
+.switch-track.on { background: var(--amber); }
+.switch-thumb {
+  position: absolute;
+  width: 13px; height: 13px;
+  background: #fff;
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: left .15s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.25);
+}
+.switch-track.on .switch-thumb { left: 18px; }
+
+/* Share button */
+.share-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: none;
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 10px;
+  cursor: pointer;
+  letter-spacing: .3px;
+  transition: background .15s;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+.share-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+.share-btn:active { background: rgba(74,158,255,.1); }
+
+.area-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 14px;
+  background: var(--surface);
+  border: 1px solid var(--edge);
+  table-layout: auto;       /* let browser size columns to content */
+}
+.area-table.hide-trips { font-size: 16px; }
+.area-table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--dim);
+  font-family: var(--sans);
+  font-weight: 500;
+  padding: 7px 8px;
+  text-align: left;
+  border-bottom: 2px solid var(--edge);
+  background: var(--raise);
+  white-space: nowrap;
+}
+.area-table th.col-area  { width: 100%; }   /* take all leftover space */
+.area-table th.col-trips { text-align: right; white-space: nowrap; }
+.area-table th.col-net   { text-align: right; white-space: nowrap; }
+.area-table td {
+  padding: 8px 8px;
+  border-bottom: 1px solid var(--edge);
+  color: var(--text);
+  white-space: nowrap;        /* never wrap — let table-layout:auto expand */
+}
+.area-table td.col-area  { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 0; width: 100%; }
+.area-table td.col-trips { text-align: right; color: var(--dim); font-size: 12px; padding-left: 4px; }
+.area-table td.col-net   { text-align: right; padding-left: 4px; }
+.area-table tr:last-child td { border-bottom: none; }
+
+/* CF header row */
+.area-table tr.cf-header td {
+  background: var(--raise);
+  color: var(--mid);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  padding: 4px 8px;
+  font-family: var(--sans);
+  border-bottom: 1px solid var(--edge);
+}
+/* CF subtotal row */
+.area-table tr.cf-total td {
+  background: var(--raise);
+  color: var(--mid);
+  font-weight: 600;
+  border-top: 1px solid var(--line);
+  border-bottom: 2px solid var(--edge);
+}
+.area-table tr.cf-total td.col-net { color: var(--amber); }
+/* MCL total row */
+.area-table tr.mcl-total td {
+  background: var(--edge);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 15px;
+  border-top: 2px solid var(--line);
+  padding: 11px 8px;
+}
+.area-table.hide-trips tr.mcl-total td { font-size: 18px; padding: 13px 8px; }
+.area-table tr.mcl-total td.col-net { color: var(--green); }
+/* Rail to Road row */
+.area-table tr.r2r-row td {
+  color: var(--blue);
+  background: var(--raise);
+  font-weight: 600;
+  border-top: 1px solid var(--line);
+  border-bottom: 2px solid var(--edge);
+}
+.area-table tr.r2r-row td.col-net { color: var(--blue); }
+/* Zero rows dimmed */
+.area-table tr.zero-row td { color: var(--dim); }
+/* Hide trips column when toggled off */
+.area-table.hide-trips .col-trips { display: none; }
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--dim);
+  font-size: 13px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (min-width: 480px) {
+  .modal-backdrop { align-items: center; }
+  .clock-sheet {
+    border: 1px solid var(--edge);
+    border-radius: 2px;
+    animation: fadeIn .18s ease;
+    max-height: 90svh;
+    overflow-y: auto;
+  }
+  @keyframes fadeIn { from { opacity:0; transform: scale(.97); } to { opacity:1; transform: scale(1); } }
+}
+</style>
+</head>
+<body>
+<input type="file" id="fileInput" style="display:none" accept="application/octet-stream,.xls">
+
+<!-- ══ HEADER ══════════════════════════════════════════ -->
+<header class="app-header" id="appHeader">
+  <div class="mcl-badge">MCL</div>
+  <div class="app-name">
+    <h1>ePass Viewer</h1>
+    <p>Mahanadi Coalfields Limited</p>
+  </div>
+  <div class="header-date" id="headerDate"></div>
+  <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
+    <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
+      <circle cx="12" cy="12" r="4" stroke-width="2"/>
+      <path stroke-linecap="round" stroke-width="2" d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+    </svg>
+    <svg id="iconMoonHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--mid);display:none">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+    </svg>
+    <div class="toggle-track" id="themeTrack">
+      <div class="toggle-thumb"></div>
+    </div>
+  </button>
+</header>
+
+
+<!-- ══ DROP SCREEN ════════════════════════════════════ -->
+<div id="drop-screen">
+  <div class="drop-box" id="dropBox" onclick="document.getElementById('fileInput').click()">
+    <span class="drop-icon" style="font-size:64px">🚛</span>
+    <h2>Open ePass MCL Coalnet Report downloaded from i3MS</h2>
+    <p>Tap to browse or drop your file here</p>
+    <div class="drop-tags">
+      <span class="tag">.XLS</span>
+    </div>
+  </div>
+  <p class="privacy-note">All processing happens on-device. Nothing is uploaded.</p>
+</div>
+
+<!-- ══ DASHBOARD ══════════════════════════════════════ -->
+<div id="dashboard">
+
+  <!-- Report meta + new file + theme toggle -->
+  <div class="report-meta">
+    <div>
+      <div class="meta-label">Report Date</div>
+      <div class="meta-val" id="metaPeriod">—</div>
+    </div>
+    <!-- Theme icon toggle — sun = light, moon = dark -->
+    <button class="theme-icon-btn" id="themeIconBtn" onclick="toggleTheme()" title="Toggle theme">
+      <!-- Sun icon (shown in dark mode to switch to light) -->
+      <svg id="iconSun" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
+        <circle cx="12" cy="12" r="4" stroke-width="2"/>
+        <path stroke-linecap="round" stroke-width="2" d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+      </svg>
+      <!-- Moon icon (shown in dark mode) -->
+      <svg id="iconMoon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--mid);display:none">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+      </svg>
+      <div class="toggle-track" id="themeFabTrack">
+        <div class="toggle-thumb"></div>
+      </div>
+    </button>
+    <button class="open-new-btn" onclick="document.getElementById('fileInput').click()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+      </svg>
+      New File
+    </button>
+  </div>
+
+  <!-- Time filter -->
+  <div class="time-card">
+    <div class="time-card-header">
+      <div class="section-label">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke-width="2"/>
+          <path stroke-linecap="round" stroke-width="2" d="M12 6v6l4 2"/>
+        </svg>
+        Despatch up to
+      </div>
+      <button class="time-clear" id="timeClearBtn" onclick="clearTime()" style="display:none">Clear</button>
+    </div>
+    <div class="time-display-row">
+      <div class="time-pill" onclick="openClock()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        </svg>
+        <span class="time-pill-val allday" id="timePillVal">Tap to set time</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Multi-day tab bar (shown only for multi-day reports) -->
+  <div id="multiDaySection" style="display:none">
+    <div class="multiday-tabs-wrap">
+      <div class="multiday-tabs-label">Multi-day Report · Select Date</div>
+      <div class="multiday-tabs" id="multiDayTabs"></div>
+    </div>
+  </div>
+
+  <!-- Area breakdown with "Data as of" bar on top (single-day and active tab for multi-day) -->
+  <div class="area-section" id="areaSection" style="display:none"
+       ontouchstart="swipeStart(event)"
+       ontouchend="swipeEnd(event)">
+
+    <!-- Data as of bar -->
+    <div class="asof-bar" id="asofBar">
+      <span class="asof-bar-label">Data as of</span>
+      <span class="asof-bar-time" id="asofBarTime">—</span>
+      <span class="asof-bar-date" id="asofBarDate">—</span>
+      <div id="asofBarWarn" style="display:none" class="asof-bar-warn"></div>
+    </div>
+
+    <!-- Section header with controls -->
+    <div class="area-section-header">
+      <div class="area-section-title">
+        Area-wise Road Despatch
+      </div>
+      <div class="area-btn-group">
+        <div class="trips-switch-wrap" onclick="toggleTrips()">
+          <span class="trips-switch-label">Trips</span>
+          <div class="switch-track" id="tripsSwitchTrack">
+            <div class="switch-thumb"></div>
+          </div>
+        </div>
+        <button class="share-btn" id="shareBtn" onclick="shareReport()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+          </svg>
+          Share
+        </button>
+      </div>
+    </div>
+
+    <table class="area-table hide-trips" id="areaTable">
+      <thead>
+        <tr>
+          <th class="col-area">Area</th>
+          <th class="col-trips">Trips</th>
+          <th class="col-net">Despatch Qty (T)</th>
+        </tr>
+      </thead>
+      <tbody id="areaTableBody"></tbody>
+    </table>
+    <div class="provisional-mark">Provisional</div>
+  </div>
+
+</div><!-- /dashboard -->
+
+<!-- ══ CLOCK MODAL ════════════════════════════════════ -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="backdropClick(event)">
+  <div class="clock-sheet" id="clockSheet">
+    <div class="sheet-header">
+      <span class="sheet-title" id="sheetTitle">Select Hour</span>
+      <button class="sheet-close" onclick="closeClock()">✕</button>
+    </div>
+
+    <!-- Digital readout -->
+    <div class="clock-time-display">
+      <div class="clock-seg" id="segH" onclick="setMode('hour')">12</div>
+      <div class="clock-colon">:</div>
+      <div class="clock-seg" id="segM" onclick="setMode('minute')">00</div>
+      <div class="ampm-toggle">
+        <button class="ampm-btn active" id="btnAM" onclick="setAP('AM')">AM</button>
+        <button class="ampm-btn"        id="btnPM" onclick="setAP('PM')">PM</button>
+      </div>
+    </div>
+
+    <div class="clock-mode-label" id="modeLabel">HOUR</div>
+
+    <!-- Clock face -->
+    <div class="clock-face-wrap">
+      <div class="clock-face" id="clockFace">
+        <!-- hands injected by JS -->
+      </div>
+    </div>
+
+    <div class="sheet-footer">
+      <button class="sheet-btn cancel" onclick="closeClock()">Cancel</button>
+      <button class="sheet-btn ok"     onclick="applyTime()">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  DATA STATE
+// ═══════════════════════════════════════════════════════
+let allRows = [];        // raw parsed rows (totals row excluded)
+let headers = [];
+let reportTotals = { gross: null, tar: null };
+let timeFilterMins = null;  // null = all day
+let isMultiDay = false;
+let activeDates   = null;
+let activeTabDate = null;
+let tabTimeFilters = {};   // date → timeFilterMins per tab
+const TOTAL_MINS = 1440;
+
+// Pre-computed indices (set after parse)
+let idxGross = -1, idxTar = -1, idxGWTime = -1, idxWB = -1, idxGWDate = -1;
+
+// Pre-computed per-row values for fast filtering
+let rowMins  = [];  // Gross Weight Time → minutes (Int16-friendly)
+let rowGross = [];  // Float32
+let rowTar   = [];  // Float32
+let rowWB    = [];  // string
+let rowGWDate = []; // string (Gross Weight Date)
+
+// Latest gross weight timestamp (for "Data as of")
+let maxGWMins = 0;
+let maxGWTimeStr = '';
+let maxGWDateStr = '';
+
+// ═══════════════════════════════════════════════════════
+//  RDO → AREA MAPPING
+// ═══════════════════════════════════════════════════════
+const RDO_MAP = [
+  // [prefix_strings[], coalfield, area]
+  { p: ['109','129','139'], cf: 'IB CF',      area: 'Basundhara Field'      },
+  { p: ['107','127','137'], cf: 'IB CF',      area: 'IB Valley Area'        },
+  { p: ['110','130','140'], cf: 'IB CF',      area: 'Lakhanpur Area'        },
+  { p: ['108','128'],       cf: 'IB CF',      area: 'Orient Area'           },
+  { p: ['101','124','131'], cf: 'Talcher CF', area: 'Jagannath-Bbsri Area'  },
+  { p: ['102','121','132'], cf: 'Talcher CF', area: 'Hingula Area'          },
+  { p: ['104','123','134'], cf: 'Talcher CF', area: 'Bharatpur Area'        },
+  { p: ['105','125','135'], cf: 'Talcher CF', area: 'Lingaraj Area'         },
+  { p: ['103','122','133'], cf: 'Talcher CF', area: 'Kaniha Area'           },
+  { p: ['106','126'],       cf: 'Talcher CF', area: 'Talcher Area'          },
+];
+const RAIL_TO_ROAD_PREFIX = '117';
+const CF_ORDER = ['IB CF', 'Talcher CF'];
+
+function rdoToArea(rdoStr) {
+  if (!rdoStr) return null;
+  const s = String(rdoStr).trim();
+  if (s.startsWith(RAIL_TO_ROAD_PREFIX)) return { cf: '__R2R__', area: 'Rail to Road' };
+  for (const entry of RDO_MAP) {
+    for (const pfx of entry.p) {
+      if (s.startsWith(pfx)) return { cf: entry.cf, area: entry.area };
+    }
+  }
+  return { cf: '__OTHER__', area: 'Other' };
+}
+
+// Per-row area (set in finishLoad)
+let rowArea = []; // array of {cf, area} | null
+document.getElementById('fileInput').addEventListener('change', e => {
+  if (e.target.files[0]) loadFile(e.target.files[0]);
+});
+const dropBox = document.getElementById('dropBox');
+document.body.addEventListener('dragover', e => { e.preventDefault(); dropBox.classList.add('over'); });
+document.body.addEventListener('dragleave', () => dropBox.classList.remove('over'));
+document.body.addEventListener('drop', e => {
+  e.preventDefault(); dropBox.classList.remove('over');
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    const t = text.trimStart();
+    if (t.startsWith('<') || t.toLowerCase().includes('<table')) parseHTML(text);
+    else parseCSV(text);
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════════════
+//  PARSERS
+// ═══════════════════════════════════════════════════════
+function parseHTML(html) {
+  const doc   = new DOMParser().parseFromString(html, 'text/html');
+  const body  = doc.body ? (doc.body.innerText || '') : '';
+  const title = (body.match(/Coalnet[^\n\r]*/i) || [''])[0].trim();
+  const dm    = title.match(/(\d{1,2}-\w+-\d{4})\s+to\s+(\d{1,2}-\w+-\d{4})/i);
+
+  if (dm) {
+    const dateFrom = dm[1], dateTo = dm[2];
+    const multiDay = dateFrom !== dateTo;
+    isMultiDay = multiDay;
+    document.getElementById('metaPeriod').textContent = multiDay
+      ? `${dateFrom} → ${dateTo}`
+      : dateTo;
+    document.getElementById('headerDate').textContent = multiDay
+      ? `${dateFrom} → ${dateTo}`
+      : dateTo;
+  } else {
+    isMultiDay = false;
+    document.getElementById('metaPeriod').textContent = title.slice(0, 50) || 'Loaded';
+    document.getElementById('headerDate').innerHTML = '<span>LOADED</span>';
+  }
+
+  const table = doc.querySelector('table');
+  if (!table) { alert('No table found.'); return; }
+
+  headers = []; allRows = []; reportTotals = { gross: null, tar: null };
+
+  table.querySelectorAll('tr').forEach(row => {
+    const ths = row.querySelectorAll('th');
+    if (ths.length) { headers = [...ths].map(t => t.textContent.trim()); return; }
+    const tds = row.querySelectorAll('td');
+    if (!tds.length) return;
+    const cells = [...tds].map(td => td.textContent.trim().replace(/\u00a0/g, '').trim());
+    // Totals row: has "Total" text, no 10-digit unique numbers
+    if (cells.some(c => c === 'Total') && !cells.some(c => /^\d{10}$/.test(c))) {
+      const nums = [...tds]
+        .filter(td => td.style && td.style.fontWeight === 'bold')
+        .map(td => parseFloat(td.textContent.trim()))
+        .filter(n => !isNaN(n));
+      if (nums.length >= 2) { reportTotals.tar = nums[0]; reportTotals.gross = nums[1]; }
+      return;
+    }
+    if (cells.every(c => !c)) return;
+    allRows.push(cells);
+  });
+
+  finishLoad();
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
+  allRows = lines.slice(1)
+    .map(l => l.split(',').map(c => c.replace(/^"|"$/g, '').trim()))
+    .filter(r => r.some(c => c));
+  reportTotals = { gross: null, tar: null };
+  document.getElementById('metaPeriod').textContent = 'CSV Report';
+  document.getElementById('headerDate').innerHTML = '<span>CSV</span>';
+  finishLoad();
+}
+
+// ═══════════════════════════════════════════════════════
+//  POST-PARSE: PRE-COMPUTE TYPED ARRAYS FOR SPEED
+// ═══════════════════════════════════════════════════════
+function finishLoad() {
+  if (!headers.length || !allRows.length) { alert('Could not parse data.'); return; }
+
+  idxGross  = ci('gross weight');
+  idxTar    = ci('tar weight');
+  idxGWTime = ci('gross weight time');
+  idxGWDate = ci('gross weight date');
+  idxWB     = ci('weigh bridge');
+  const idxRDO = ci('rdo number');
+
+  const n = allRows.length;
+  rowMins   = new Int16Array(n);
+  rowGross  = new Float32Array(n);
+  rowTar    = new Float32Array(n);
+  rowWB     = new Array(n);
+  rowGWDate = new Array(n);
+  rowArea   = new Array(n);
+
+  maxGWMins = -1; maxGWTimeStr = ''; maxGWDateStr = '';
+
+  for (let i = 0; i < n; i++) {
+    const row = allRows[i];
+    const mins = idxGWTime >= 0 ? timeToMins(row[idxGWTime]) : 0;
+    rowMins[i]   = mins;
+    rowGross[i]  = idxGross  >= 0 ? parseFloat(row[idxGross])  || 0 : 0;
+    rowTar[i]    = idxTar    >= 0 ? parseFloat(row[idxTar])    || 0 : 0;
+    rowWB[i]     = idxWB     >= 0 ? row[idxWB]     : '';
+    rowGWDate[i] = idxGWDate >= 0 ? row[idxGWDate] : '';
+    rowArea[i]   = idxRDO   >= 0 ? rdoToArea(row[idxRDO]) : null;
+    if (mins > maxGWMins) {
+      maxGWMins    = mins;
+      maxGWTimeStr = idxGWTime >= 0 ? row[idxGWTime].trim() : '';
+      maxGWDateStr = idxGWDate >= 0 ? row[idxGWDate].trim() : '';
+    }
+  }
+
+  // Populate "Data as of" bar (time bar updates dynamically in updateStats)
+  // maxGWTimeStr and maxGWDateStr are used directly there
+
+  // Reset time filter (works for both single and multi-day)
+  timeFilterMins = null;
+  document.getElementById('timePillVal').textContent = 'Tap to set time';
+  document.getElementById('timePillVal').className   = 'time-pill-val allday';
+  document.getElementById('timeClearBtn').style.display = 'none';
+
+  // Always show time card
+  document.querySelector('.time-card').style.display = 'block';
+
+  // Hide header, show dashboard
+  document.getElementById('appHeader').classList.add('hidden');
+  document.getElementById('drop-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display   = 'block';
+
+  if (isMultiDay) {
+    // Build date tabs — collect unique dates in order
+    const seen = new Set();
+    for (let i = 0; i < rowGWDate.length; i++) {
+      if (rowGWDate[i] && !seen.has(rowGWDate[i])) {
+        seen.add(rowGWDate[i]);
+      }
+    }
+    activeDates = [...seen].sort((a, b) => {
+      // Parse "DD-Mon-YYYY" for reliable date comparison
+      return new Date(a.replace(/(\d+)-(\w+)-(\d+)/, '$2 $1 $3'))
+           - new Date(b.replace(/(\d+)-(\w+)-(\d+)/, '$2 $1 $3'));
+    });
+    activeTabDate = activeDates[0] || null;
+    tabTimeFilters = {};   // reset per-tab filters for new file
+    buildDateTabs();
+    document.getElementById('multiDaySection').style.display = 'block';
+  } else {
+    activeDates = null;
+    activeTabDate = null;
+    document.getElementById('multiDaySection').style.display = 'none';
+  }
+
+  updateStats();
+}
+
+// ═══════════════════════════════════════════════════════
+//  MULTI-DAY TAB SWITCHER
+// ═══════════════════════════════════════════════════════
+function buildDateTabs() {
+  const bar = document.getElementById('multiDayTabs');
+  bar.innerHTML = '';
+  for (const date of activeDates) {
+    const btn = document.createElement('button');
+    btn.className = 'multiday-tab' + (date === activeTabDate ? ' active' : '');
+    btn.textContent = date;
+    btn.onclick = () => switchTab(date);
+    bar.appendChild(btn);
+  }
+}
+
+function switchTab(date) {
+  // Save current tab's filter before leaving
+  if (activeTabDate) tabTimeFilters[activeTabDate] = timeFilterMins;
+
+  activeTabDate = date;
+
+  // Update tab highlight and scroll active tab into view
+  document.querySelectorAll('.multiday-tab').forEach(btn => {
+    const isActive = btn.textContent === date;
+    btn.classList.toggle('active', isActive);
+    if (isActive) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  });
+
+  // Restore this tab's saved filter (or default to All Day)
+  timeFilterMins = tabTimeFilters[date] !== undefined ? tabTimeFilters[date] : null;
+  if (timeFilterMins !== null) {
+    document.getElementById('timePillVal').textContent = minsToLabel(timeFilterMins);
+    document.getElementById('timePillVal').className   = 'time-pill-val';
+    document.getElementById('timeClearBtn').style.display = 'inline';
+  } else {
+    document.getElementById('timePillVal').textContent = 'Tap to set time';
+    document.getElementById('timePillVal').className   = 'time-pill-val allday';
+    document.getElementById('timeClearBtn').style.display = 'none';
+  }
+  updateStats();
+}
+
+// ═══════════════════════════════════════════════════════
+//  AREA BREAKDOWN TABLE RENDER
+// ═══════════════════════════════════════════════════════
+function renderAreaTable(areaAcc, cfAcc, r2rG, r2rT, r2rTrips, mclNet) {
+  const tbody  = document.getElementById('areaTableBody');
+  const section = document.getElementById('areaSection');
+  const frag   = document.createDocumentFragment();
+
+  // Build ordered list of {cf, areas[]}
+  const cfAreas = {};
+  for (const entry of RDO_MAP) {
+    if (!cfAreas[entry.cf]) cfAreas[entry.cf] = [];
+    if (!cfAreas[entry.cf].includes(entry.area)) cfAreas[entry.cf].push(entry.area);
+  }
+
+  const addRow = (cls, cells) => {
+    // cells = [areaText, tripsText, netText]
+    const tr = document.createElement('tr');
+    if (cls) tr.className = cls;
+    const clsNames = ['col-area', 'col-trips', 'col-net'];
+    cells.forEach((c, i) => {
+      const td = document.createElement('td');
+      td.className = clsNames[i];
+      td.innerHTML = c;
+      tr.appendChild(td);
+    });
+    frag.appendChild(tr);
+  };
+
+  let mclNet2 = 0; // recompute from areas for sanity
+
+  for (const cf of CF_ORDER) {
+    // CF header
+    addRow('cf-header', [cf, '', '']);
+
+    const areas = cfAreas[cf] || [];
+    let cfNet = 0, cfTrips = 0;
+
+    for (const area of areas) {
+      const acc = areaAcc[area];
+      const aNet   = acc ? (acc.g - acc.t) : 0;
+      const aTrips = acc ? acc.trips       : 0;
+      cfNet   += aNet;
+      cfTrips += aTrips;
+      const cls = aNet === 0 ? 'zero-row' : '';
+      addRow(cls, [area, aTrips.toLocaleString(), fmt(aNet)]);
+    }
+
+    mclNet2 += cfNet;
+    // CF subtotal
+    addRow('cf-total', [cf + ' Total', cfTrips.toLocaleString(), fmt(cfNet)]);
+  }
+
+  // MCL total = CF totals + Rail to Road
+  const r2rNet = r2rG - r2rT;
+  const mclTotal = mclNet2 + r2rNet;
+
+  // Rail to Road — between CF totals and MCL Total, same visual level as CF totals
+  if (r2rNet > 0) {
+    addRow('r2r-row', ['Rail to Road', r2rTrips.toLocaleString(), fmt(r2rNet)]);
+  }
+
+  addRow('mcl-total', ['MCL Total', '', fmt(mclTotal)]);
+
+  tbody.innerHTML = '';
+  tbody.appendChild(frag);
+  section.style.display = 'block';
+}
+
+// ═══════════════════════════════════════════════════════
+//  FAST STATS — no DOM table, pure typed-array loops
+// ═══════════════════════════════════════════════════════
+function updateStats() {
+  const n = rowGross.length;
+  let sumG = 0, sumT = 0, trips = 0;
+  const wbSet = new Set();
+
+  // Area accumulators: { gross, tar, trips }
+  const areaAcc = {};   // key = area name
+  const cfAcc   = {};   // key = cf name
+  let r2rG = 0, r2rT = 0, r2rTrips = 0;
+
+  function accArea(key, g, t) {
+    if (!areaAcc[key]) areaAcc[key] = { g: 0, t: 0, trips: 0 };
+    areaAcc[key].g += g; areaAcc[key].t += t; areaAcc[key].trips++;
+  }
+  function accCF(key, g, t) {
+    if (!cfAcc[key]) cfAcc[key] = { g: 0, t: 0, trips: 0 };
+    cfAcc[key].g += g; cfAcc[key].t += t; cfAcc[key].trips++;
+  }
+
+  if (timeFilterMins === null) {
+    for (let i = 0; i < n; i++) {
+      if (activeTabDate && rowGWDate[i] !== activeTabDate) continue;
+      const g = rowGross[i], t = rowTar[i];
+      sumG += g; sumT += t;
+      if (rowWB[i]) wbSet.add(rowWB[i]);
+      const a = rowArea[i];
+      if (a) {
+        if (a.cf === '__R2R__') { r2rG += g; r2rT += t; r2rTrips++; }
+        else { accArea(a.area, g, t); if (a.cf !== '__OTHER__') accCF(a.cf, g, t); }
+      }
+      trips++;
+    }
+  } else {
+    const cutoff = timeFilterMins;
+    for (let i = 0; i < n; i++) {
+      if (activeTabDate && rowGWDate[i] !== activeTabDate) continue;
+      if (rowMins[i] <= cutoff) {
+        const g = rowGross[i], t = rowTar[i];
+        sumG += g; sumT += t;
+        if (rowWB[i]) wbSet.add(rowWB[i]);
+        const a = rowArea[i];
+        if (a) {
+          if (a.cf === '__R2R__') { r2rG += g; r2rT += t; r2rTrips++; }
+          else { accArea(a.area, g, t); if (a.cf !== '__OTHER__') accCF(a.cf, g, t); }
+        }
+        trips++;
+      }
+    }
+  }
+
+  const net = sumG - sumT;
+
+  // ── Area breakdown table ─────────────────────────────
+  renderAreaTable(areaAcc, cfAcc, r2rG, r2rT, r2rTrips, net);
+
+  // ── "Data as of" bar logic ────────────────────────────
+  // Compute max GW time for current tab (or full dataset for single-day)
+  let tabMaxMins = -1, tabMaxTimeStr = '', tabMaxDateStr = '';
+  for (let i = 0; i < n; i++) {
+    if (activeTabDate && rowGWDate[i] !== activeTabDate) continue;
+    if (rowMins[i] > tabMaxMins) {
+      tabMaxMins    = rowMins[i];
+      tabMaxTimeStr = allRows[i][idxGWTime] ? allRows[i][idxGWTime].trim() : '';
+      tabMaxDateStr = rowGWDate[i] || '';
+    }
+  }
+  // Fall back to global max for single-day
+  if (tabMaxMins < 0) { tabMaxMins = maxGWMins; tabMaxTimeStr = maxGWTimeStr; tabMaxDateStr = maxGWDateStr; }
+
+  const barTime = document.getElementById('asofBarTime');
+  const barDate = document.getElementById('asofBarDate');
+  const barWarn = document.getElementById('asofBarWarn');
+  const barEl   = document.getElementById('asofBar');
+
+  if (timeFilterMins === null) {
+    barTime.textContent = tabMaxTimeStr || '—';
+    barTime.className = 'asof-bar-time';
+    barDate.textContent = tabMaxDateStr || '—';
+    barWarn.style.display = 'none';
+    barEl.style.borderTopColor = '';
+  } else if (timeFilterMins <= tabMaxMins) {
+    barTime.textContent = minsToLabel(timeFilterMins);
+    barTime.className = 'asof-bar-time';
+    barDate.textContent = tabMaxDateStr || '—';
+    barWarn.style.display = 'none';
+    barEl.style.borderTopColor = '';
+  } else {
+    barTime.textContent = tabMaxTimeStr || '—';
+    barTime.className = 'asof-bar-time warn';
+    barDate.textContent = tabMaxDateStr || '—';
+    barWarn.style.display = 'block';
+    barWarn.textContent = '⚠ Data available only until ' + (tabMaxTimeStr || '—');
+    barEl.style.borderTopColor = document.body.classList.contains('dark') ? '#e05454' : '#c0392b';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════
+function ci(name) { return headers.findIndex(h => h.toLowerCase() === name); }
+
+function timeToMins(t) {
+  if (!t) return 0;
+  const m = t.trim().match(/^(\d{1,2}):(\d{2})(AM|PM)$/i);
+  if (!m) return 0;
+  let h = parseInt(m[1]), min = parseInt(m[2]);
+  if (m[3].toUpperCase() === 'AM') { if (h === 12) h = 0; }
+  else                              { if (h !== 12) h += 12; }
+  return h * 60 + min;
+}
+
+function minsToLabel(mins) {
+  if (mins === null) return 'All Day';
+  const h24 = Math.floor(mins / 60), m = mins % 60;
+  const ap  = h24 < 12 ? 'AM' : 'PM';
+  const h12 = h24 % 12 || 12;
+  return h12 + ':' + String(m).padStart(2, '0') + ' ' + ap;
+}
+
+function fmt(n) {
+  return Math.round(n).toLocaleString();
+}
+
+function clearTime() {
+  timeFilterMins = null;
+  if (activeTabDate) tabTimeFilters[activeTabDate] = null;
+  document.getElementById('timePillVal').textContent = 'Tap to set time';
+  document.getElementById('timePillVal').className   = 'time-pill-val allday';
+  document.getElementById('timeClearBtn').style.display = 'none';
+  updateStats();
+}
+
+// ═══════════════════════════════════════════════════════
+//  CLOCK PICKER
+// ═══════════════════════════════════════════════════════
+let clockH  = 12;   // 1–12
+let clockM  = 0;    // 0–59
+let clockAP = 'AM'; // 'AM'|'PM'
+let clockMode = 'hour'; // 'hour'|'minute'
+let clockDragging = false;
+
+function openClock() {
+  // Seed from current filter or default 12:00 AM
+  if (timeFilterMins !== null) {
+    const h24 = Math.floor(timeFilterMins / 60);
+    clockM  = timeFilterMins % 60;
+    clockAP = h24 < 12 ? 'AM' : 'PM';
+    clockH  = h24 % 12 || 12;
+  } else {
+    clockH = 12; clockM = 0; clockAP = 'AM';
+  }
+  clockMode = 'hour';
+  renderClock();
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+
+function closeClock() {
+  document.getElementById('modalBackdrop').classList.remove('open');
+}
+
+function backdropClick(e) {
+  if (e.target === document.getElementById('modalBackdrop')) closeClock();
+}
+
+function setAP(ap) {
+  clockAP = ap;
+  document.getElementById('btnAM').classList.toggle('active', ap === 'AM');
+  document.getElementById('btnPM').classList.toggle('active', ap === 'PM');
+  updateDigital();
+}
+
+function setMode(mode) {
+  clockMode = mode;
+  renderClock();
+}
+
+function updateDigital() {
+  const segH = document.getElementById('segH');
+  const segM = document.getElementById('segM');
+  segH.textContent = String(clockH).padStart(2, '0');
+  segM.textContent = String(clockM).padStart(2, '0');
+  segH.classList.toggle('active', clockMode === 'hour');
+  segM.classList.toggle('active', clockMode === 'minute');
+  document.getElementById('sheetTitle').textContent =
+    clockMode === 'hour' ? 'Select Hour' : 'Select Minute';
+  document.getElementById('modeLabel').textContent =
+    clockMode === 'hour' ? 'HOUR' : 'MINUTE';
+  document.getElementById('btnAM').classList.toggle('active', clockAP === 'AM');
+  document.getElementById('btnPM').classList.toggle('active', clockAP === 'PM');
+}
+
+function renderClock() {
+  updateDigital();
+  const face = document.getElementById('clockFace');
+  face.innerHTML = '';
+
+  const size = face.offsetWidth || 300;
+  const cx = size / 2, cy = size / 2;
+  const outerR = size * 0.36;   // numbers pulled inward — clear of tick marks
+
+  if (clockMode === 'hour') {
+    // Numbers 1–12 on outer ring
+    for (let h = 1; h <= 12; h++) {
+      const angle = (h / 12) * 2 * Math.PI - Math.PI / 2;
+      const x = cx + outerR * Math.cos(angle);
+      const y = cy + outerR * Math.sin(angle);
+      const el = document.createElement('div');
+      el.className = 'clock-number' + (h === clockH ? ' hi' : '');
+      el.textContent = h;
+      el.style.left = x + 'px';
+      el.style.top  = y + 'px';
+      face.appendChild(el);
+    }
+    // Hour hand + selection dot
+    const handAngle = (clockH / 12) * 360 - 90;
+    addHand(face, 'clock-hand hour-hand', handAngle + 90);
+    const selAngle = (clockH / 12) * 2 * Math.PI - Math.PI / 2;
+    addDot(face, cx + outerR * Math.cos(selAngle), cy + outerR * Math.sin(selAngle));
+  } else {
+    // Minutes: marks every 5 min
+    for (let i = 0; i < 12; i++) {
+      const m = i * 5;
+      const angle = (i / 12) * 2 * Math.PI - Math.PI / 2;
+      const x = cx + outerR * Math.cos(angle);
+      const y = cy + outerR * Math.sin(angle);
+      const el = document.createElement('div');
+      el.className = 'clock-number' + (Math.abs(clockM - m) <= 2 || (clockM >= 58 && m === 0) ? ' hi' : '');
+      el.textContent = String(m).padStart(2, '0');
+      face.appendChild(el);
+      el.style.left = x + 'px';
+      el.style.top  = y + 'px';
+    }
+    // Minute hand
+    const mAngle = (clockM / 60) * 360;
+    addHand(face, 'clock-hand minute-hand', mAngle);
+    // Selection dot at exact minute
+    const selAngle = (clockM / 60) * 2 * Math.PI - Math.PI / 2;
+    addDot(face, cx + outerR * Math.cos(selAngle), cy + outerR * Math.sin(selAngle));
+  }
+
+  // Draw tick marks
+  for (let i = 0; i < 60; i++) {
+    const angle = (i / 60) * 2 * Math.PI - Math.PI / 2;
+    const isMajor = i % 5 === 0;
+    const r1 = cx * 0.9;
+    const r2 = isMajor ? cx * 0.82 : cx * 0.86;
+    const tick = document.createElement('div');
+    tick.style.cssText = `
+      position:absolute;
+      width:${isMajor ? 2 : 1}px;
+      height:${isMajor ? 6 : 4}px;
+      background:${isMajor ? 'var(--line)' : 'var(--edge)'};
+      left:${cx + r1 * Math.cos(angle)}px;
+      top:${cy + r1 * Math.sin(angle)}px;
+      transform:translate(-50%,-50%) rotate(${(i/60)*360}deg);
+      border-radius:1px;
+      pointer-events:none;
+    `;
+    face.appendChild(tick);
+  }
+}
+
+function addHand(face, cls, deg) {
+  const el = document.createElement('div');
+  el.className = cls;
+  el.style.transform = `translateX(-50%) rotate(${deg}deg)`;
+  face.appendChild(el);
+}
+
+function addDot(face, x, y) {
+  const el = document.createElement('div');
+  el.className = 'clock-select-dot';
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
+  face.appendChild(el);
+}
+
+// ── Touch / Mouse on clock face ──────────────────────────
+function angleFromEvent(e, face) {
+  const rect = face.getBoundingClientRect();
+  const cx = rect.left + rect.width  / 2;
+  const cy = rect.top  + rect.height / 2;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return Math.atan2(clientY - cy, clientX - cx); // radians, 0 = right, -π/2 = up
+}
+
+function angleToHour(rad) {
+  // 12 o'clock = -π/2, going clockwise
+  let a = rad + Math.PI / 2;
+  if (a < 0) a += 2 * Math.PI;
+  const h = Math.round(a / (2 * Math.PI / 12)) % 12 || 12;
+  return h; // 1–12
+}
+
+function angleToMinute(rad) {
+  let a = rad + Math.PI / 2;
+  if (a < 0) a += 2 * Math.PI;
+  return Math.round(a / (2 * Math.PI / 60)) % 60;
+}
+
+const face = document.getElementById('clockFace');
+
+face.addEventListener('mousedown',  e => { clockDragging = true; handleClockInput(e); });
+face.addEventListener('touchstart', e => { clockDragging = true; handleClockInput(e); e.preventDefault(); }, { passive: false });
+document.addEventListener('mousemove',  e => { if (clockDragging) handleClockInput(e); });
+document.addEventListener('touchmove',  e => {
+  if (clockDragging) { handleClockInput(e); e.preventDefault(); }
+}, { passive: false });
+document.addEventListener('mouseup',    () => {
+  if (clockDragging) {
+    clockDragging = false;
+    if (clockMode === 'hour') { clockMode = 'minute'; renderClock(); }
+  }
+});
+document.addEventListener('touchend',   () => {
+  if (clockDragging) {
+    clockDragging = false;
+    if (clockMode === 'hour') { clockMode = 'minute'; renderClock(); }
+  }
+});
+
+function handleClockInput(e) {
+  const angle = angleFromEvent(e, face);
+  if (clockMode === 'hour') {
+    clockH = angleToHour(angle);
+  } else {
+    clockM = angleToMinute(angle);
+  }
+  renderClock();
+}
+
+function applyTime() {
+  let h24 = clockH % 12;
+  if (clockAP === 'PM') h24 += 12;
+  timeFilterMins = h24 * 60 + clockM;
+  if (activeTabDate) tabTimeFilters[activeTabDate] = timeFilterMins;
+  document.getElementById('timePillVal').textContent = minsToLabel(timeFilterMins);
+  document.getElementById('timePillVal').className   = 'time-pill-val';
+  document.getElementById('timeClearBtn').style.display = 'inline';
+  closeClock();
+  updateStats();
+}
+
+// ═══════════════════════════════════════════════════════
+//  SWIPE TO SWITCH DATE TABS
+// ═══════════════════════════════════════════════════════
+let swipeX0 = null;
+
+function swipeStart(e) {
+  swipeX0 = e.touches[0].clientX;
+}
+
+function swipeEnd(e) {
+  if (swipeX0 === null || !isMultiDay || !activeDates) return;
+  const dx = e.changedTouches[0].clientX - swipeX0;
+  swipeX0 = null;
+  if (Math.abs(dx) < 40) return;   // too short — ignore
+  const idx = activeDates.indexOf(activeTabDate);
+  if (dx < 0 && idx < activeDates.length - 1) switchTab(activeDates[idx + 1]); // swipe left → next
+  if (dx > 0 && idx > 0)                       switchTab(activeDates[idx - 1]); // swipe right → prev
+}
+
+// ═══════════════════════════════════════════════════════
+//  THEME TOGGLE
+// ═══════════════════════════════════════════════════════
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark');
+  // Header toggle (drop screen) — track + sun/moon
+  document.getElementById('themeTrack').classList.toggle('on', isDark);
+  document.getElementById('iconSunHeader').style.display  = isDark ? 'none'  : 'block';
+  document.getElementById('iconMoonHeader').style.display = isDark ? 'block' : 'none';
+  // Embedded toggle in report-meta — track + sun/moon
+  document.getElementById('themeFabTrack').classList.toggle('on', isDark);
+  document.getElementById('iconSun').style.display  = isDark ? 'none'  : 'block';
+  document.getElementById('iconMoon').style.display = isDark ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════
+//  TRIPS COLUMN TOGGLE
+// ═══════════════════════════════════════════════════════
+let tripsVisible = false;
+
+function toggleTrips() {
+  tripsVisible = !tripsVisible;
+  document.getElementById('areaTable').classList.toggle('hide-trips', !tripsVisible);
+  document.getElementById('tripsSwitchTrack').classList.toggle('on', tripsVisible);
+}
+
+// ═══════════════════════════════════════════════════════
+//  SHARE AS IMAGE
+// ═══════════════════════════════════════════════════════
+async function shareReport() {
+  const btn = document.getElementById('shareBtn');
+  const origHTML = btn.innerHTML;
+  btn.innerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:12px;height:12px;animation:spin 1s linear infinite"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Wait...';
+  btn.disabled = true;
+
+  // ── Theme: match the app ────────────────────────────
+  const isDark    = document.body.classList.contains('dark');
+  const C = isDark ? {
+    bg:      '#0e1117', surface: '#161b24', raise: '#1c2333',
+    edge:    '#253047', line:    '#2e3d56',
+    amber:   '#f0a500', green:   '#2fc97e', blue:  '#4a9eff',
+    dim:     '#5a7299', mid:     '#8ba3c2', text:  '#dde6f4',
+    red:     '#e05454',
+  } : {
+    bg:      '#f0f2f5', surface: '#ffffff', raise: '#f7f8fa',
+    edge:    '#dde3ec', line:    '#c8d2e0',
+    amber:   '#d4860a', green:   '#1a9e5c', blue:  '#1a6fc4',
+    dim:     '#7a8fa8', mid:     '#4a6080', text:  '#1a2436',
+    red:     '#c0392b',
+  };
+
+  // ── Data ────────────────────────────────────────────
+  const shownTime  = document.getElementById('asofBarTime').textContent;
+  const shownDate  = document.getElementById('asofBarDate').textContent;
+  // reportDate may say "01-Apr-2026" — same as shownDate, so skip it if equal
+  const reportDate = document.getElementById('metaPeriod').textContent.trim();
+  const dateLabel = (!isMultiDay && reportDate !== shownDate) ? reportDate : '';
+
+  // ── Snap container ──────────────────────────────────
+  const snap = document.createElement('div');
+  snap.style.cssText = `position:fixed;left:-9999px;top:0;width:520px;background:${C.bg};padding:20px;font-family:IBM Plex Sans,sans-serif;color:${C.text};`;
+
+  // ── Title ───────────────────────────────────────────
+  const titleDiv = document.createElement('div');
+  titleDiv.style.cssText = `margin-bottom:18px;padding-bottom:16px;border-bottom:2px solid ${C.edge};`;
+  titleDiv.innerHTML = `
+    ${dateLabel ? `<div style="font-family:IBM Plex Mono,monospace;font-size:11px;color:${C.dim};letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;">${dateLabel}</div>` : ''}
+    <div style="font-family:IBM Plex Mono,monospace;font-size:18px;font-weight:600;color:${C.dim};letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">MCL Road Despatch as of</div>
+    <div style="font-family:IBM Plex Mono,monospace;font-size:34px;font-weight:700;color:${C.amber};letter-spacing:1px;line-height:1.05;margin-bottom:3px;">${shownTime}</div>
+    <div style="font-family:IBM Plex Mono,monospace;font-size:17px;font-weight:400;color:${C.mid};letter-spacing:.5px;">${shownDate}</div>
+  `;
+  snap.appendChild(titleDiv);
+
+  // ── Table ────────────────────────────────────────────
+  const tbl = document.getElementById('areaTable').cloneNode(true);
+
+  // Respect the trips switch state
+  if (!tripsVisible) {
+    tbl.classList.add('hide-trips');
+  } else {
+    tbl.classList.remove('hide-trips');
+  }
+
+  // Font sizes scale up when trips are hidden (more space available)
+  const bodyFs   = tripsVisible ? '16px' : '20px';
+  const totalFs  = tripsVisible ? '16px' : '20px';
+  const mclFs    = tripsVisible ? '18px' : '24px';
+  const mclNetFs = tripsVisible ? '20px' : '28px';
+  const mclPad   = tripsVisible ? '13px 12px' : '15px 12px';
+
+  tbl.style.cssText = `width:auto;min-width:100%;border-collapse:collapse;font-family:IBM Plex Mono,monospace;font-size:${bodyFs};background:${C.surface};border:1px solid ${C.edge};table-layout:auto;`;
+
+  const sc = (el, extra) => Object.assign(el.style, extra);
+
+  // Hide trips column in image if switch is off
+  if (!tripsVisible) {
+    tbl.querySelectorAll('.col-trips').forEach(el => { el.style.display = 'none'; });
+  }
+
+  tbl.querySelectorAll('th').forEach(th => {
+    sc(th, {fontSize:'15px',textTransform:'uppercase',letterSpacing:'.5px',color:C.dim,fontFamily:'IBM Plex Sans,sans-serif',fontWeight:'600',padding:'10px 12px',textAlign:'left',borderBottom:`2px solid ${C.edge}`,background:C.raise,whiteSpace:'nowrap'});
+    if (th.classList.contains('col-trips') || th.classList.contains('col-net')) th.style.textAlign = 'right';
+  });
+  tbl.querySelectorAll('td').forEach(td => {
+    sc(td, {padding:'10px 12px',borderBottom:`1px solid ${C.edge}`,color:C.text,whiteSpace:'nowrap'});
+    if (td.classList.contains('col-trips')) { td.style.textAlign='right'; td.style.color=C.dim; td.style.fontSize='14px'; td.style.paddingLeft='8px'; }
+    if (td.classList.contains('col-net'))   { td.style.textAlign='right'; td.style.paddingLeft='8px'; }
+  });
+  tbl.querySelectorAll('tr.cf-header td').forEach(td => sc(td, {background:C.raise,color:C.mid,fontSize:'13px',textTransform:'uppercase',fontFamily:'IBM Plex Sans,sans-serif',fontWeight:'600',padding:'6px 12px',borderBottom:`1px solid ${C.edge}`}));
+  tbl.querySelectorAll('tr.cf-total td').forEach(td => sc(td, {background:C.raise,fontWeight:'600',fontSize:totalFs,color:C.mid,borderTop:`1px solid ${C.line}`,borderBottom:`2px solid ${C.edge}`}));
+  tbl.querySelectorAll('tr.cf-total td.col-net').forEach(td => { td.style.color = C.amber; });
+  tbl.querySelectorAll('tr.mcl-total td').forEach(td => sc(td, {background:C.edge,fontWeight:'700',fontSize:mclFs,color:C.text,borderTop:`2px solid ${C.line}`,padding:mclPad}));
+  tbl.querySelectorAll('tr.mcl-total td.col-net').forEach(td => { td.style.color = C.green; td.style.fontSize = mclNetFs; });
+  tbl.querySelectorAll('tr.r2r-row td').forEach(td => { td.style.color = C.blue; td.style.background = C.raise; td.style.fontWeight = '600'; td.style.borderTop = `1px solid ${C.line}`; td.style.borderBottom = `2px solid ${C.edge}`; });
+  tbl.querySelectorAll('tr.zero-row td').forEach(td => { td.style.color = C.dim; });
+  tbl.querySelectorAll('tr:last-child td').forEach(td => { td.style.borderBottom = 'none'; });
+
+  snap.appendChild(tbl);
+
+  // ── Footer ───────────────────────────────────────────
+  const footer = document.createElement('div');
+  const provisionalColor = isDark ? '#667a99' : '#8999a0';
+  footer.style.cssText = `margin-top:10px;text-align:center;font-family:IBM Plex Mono,monospace;font-size:13px;color:${provisionalColor};letter-spacing:3px;text-transform:uppercase;`;
+  footer.textContent = 'Provisional';
+  snap.appendChild(footer);
+
+  document.body.appendChild(snap);
+
+  try {
+    const canvas = await html2canvas(snap, { backgroundColor: C.bg, scale:2, useCORS:true, logging:false });
+    canvas.toBlob(async blob => {
+      const file = new File([blob], 'coalnet-despatch.png', { type:'image/png' });
+      if (navigator.canShare && navigator.canShare({ files:[file] })) {
+        try { await navigator.share({ files:[file], title:'MCL Road Despatch' }); }
+        catch(e) { if (e.name !== 'AbortError') downloadBlob(blob); }
+      } else { downloadBlob(blob); }
+    }, 'image/png');
+  } catch(e) {
+    alert('Could not generate image. Please try again.');
+  } finally {
+    document.body.removeChild(snap);
+    btn.innerHTML = origHTML;
+    btn.disabled = false;
+  }
+}
+
+function downloadBlob(blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'coalnet-report.png';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+</script>
+</body>
+</html>
