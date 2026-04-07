@@ -1,0 +1,45 @@
+name: Test i3MS Connectivity
+
+on:
+  workflow_dispatch:   # manual trigger only — you tap "Run workflow"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Check if i3MS portal is reachable
+        run: |
+          echo "Testing connectivity to i3MS portal..."
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" \
+            --max-time 30 \
+            --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
+            "https://i3ms.odishaminerals.gov.in/i3msnew1.aspx")
+          echo "HTTP Status: $STATUS"
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Portal is reachable from GitHub Actions"
+          elif [ "$STATUS" = "000" ]; then
+            echo "❌ Connection failed or timed out — portal may be blocking datacenter IPs"
+          elif [ "$STATUS" = "403" ]; then
+            echo "❌ 403 Forbidden — portal is actively blocking this IP range"
+          else
+            echo "⚠️  Got HTTP $STATUS — needs investigation"
+          fi
+
+      - name: Check page content
+        run: |
+          echo "Fetching page content..."
+          BODY=$(curl -s \
+            --max-time 30 \
+            --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
+            "https://i3ms.odishaminerals.gov.in/i3msnew1.aspx" | head -c 500)
+          echo "First 500 chars of response:"
+          echo "$BODY"
+
+      - name: Show GitHub Actions IP
+        run: |
+          echo "This runner's public IP:"
+          curl -s https://api.ipify.org
+          echo ""
+          echo "IP info:"
+          curl -s https://ipinfo.io/json
