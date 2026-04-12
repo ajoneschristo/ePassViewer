@@ -1367,22 +1367,29 @@ function updateDbIndicator(unknownCount) {
 async function loadDbFromGitHub() {
   updateDbStatus(true);
   try {
-    const url = `${GH.api}/repos/${GH.owner}/${GH.repo}/contents/${GH.path}?ref=${GH.branch}&t=${Date.now()}`;
-    const res = await fetch(url, {
+    // First get the SHA via Contents API (lightweight — just metadata)
+    const metaUrl = `${GH.api}/repos/${GH.owner}/${GH.repo}/contents/${GH.path}?ref=${GH.branch}&t=${Date.now()}`;
+    const metaRes = await fetch(metaUrl, {
       headers: { 'Authorization': `token ${GH.token}`, 'Accept': 'application/vnd.github.v3+json' }
     });
-    if (res.status === 404) {
-      // File doesn't exist yet — start with empty DB
+    if (metaRes.status === 404) {
       _ghSha = null;
       mclhoDB = {}; mclhoCount = 0;
       updateDbStatus(false);
       return;
     }
-    if (!res.ok) throw new Error(`GitHub fetch failed: ${res.status}`);
-    const data = await res.json();
-    _ghSha = data.sha;
-    const json = JSON.parse(atob(data.content.replace(/\n/g, '')));
-    mclhoDB    = json.db   || {};
+    if (!metaRes.ok) throw new Error(`GitHub fetch failed: ${metaRes.status}`);
+    const meta = await metaRes.json();
+    _ghSha = meta.sha;
+
+    // Fetch actual content via raw URL (no size limit)
+    const rawUrl = `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${GH.branch}/${GH.path}?t=${Date.now()}`;
+    const rawRes = await fetch(rawUrl, {
+      headers: { 'Authorization': `token ${GH.token}` }
+    });
+    if (!rawRes.ok) throw new Error(`Raw fetch failed: ${rawRes.status}`);
+    const json = await rawRes.json();
+    mclhoDB    = json.db || {};
     mclhoCount = Object.keys(mclhoDB).length;
     updateDbStatus(false);
   } catch(e) {
@@ -1416,12 +1423,38 @@ async function saveDbToGitHub() {
       },
       body: JSON.stringify(body),
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || res.status);
-    }
+
     const result = await res.json();
-    _ghSha = result.content.sha; // update SHA for next save
+
+    if (!res.ok) {
+      // If SHA conflict (422), re-fetch SHA and retry once
+      if (res.status === 422) {
+        const refetch = await fetch(
+          `${GH.api}/repos/${GH.owner}/${GH.repo}/contents/${GH.path}?ref=${GH.branch}`,
+          { headers: { 'Authorization': `token ${GH.token}`, 'Accept': 'application/vnd.github.v3+json' } }
+        );
+        if (refetch.ok) {
+          const refetchData = await refetch.json();
+          _ghSha = refetchData.sha;
+          body.sha = _ghSha;
+          const retry = await fetch(url, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `token ${GH.token}`,
+              'Accept':        'application/vnd.github.v3+json',
+              'Content-Type':  'application/json',
+            },
+            body: JSON.stringify(body),
+          });
+          const retryResult = await retry.json();
+          if (!retry.ok) throw new Error(`${retry.status}: ${retryResult.message}`);
+          _ghSha = retryResult.content.sha;
+          return;
+        }
+      }
+      throw new Error(`${res.status}: ${result.message}`);
+    }
+    _ghSha = result.content.sha;
   } catch(e) {
     alert(`Could not save to cloud: ${e.message}\nData is still in memory for this session.`);
   } finally {
