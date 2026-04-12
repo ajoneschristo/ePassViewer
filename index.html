@@ -206,7 +206,7 @@ body {
 /* ── MAIN DASHBOARD ── */
 #dashboard {
   display: none;
-  padding: 10px 8px calc(env(safe-area-inset-bottom, 0px) + 20px);
+  padding: 10px 10px calc(env(safe-area-inset-bottom, 0px) + 20px) 8px;
   max-width: 600px;
   margin: 0 auto;
 }
@@ -660,26 +660,18 @@ body {
 .area-section-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 10px;
+  justify-content: flex-end;
+  margin-top: 8px;
   margin-bottom: 8px;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 5px;
 }
-.area-section-title {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--dim);
-  text-transform: uppercase;
-  letter-spacing: .8px;
+.area-btn-group {
   display: flex;
   align-items: center;
-  gap: 7px;
-  flex: 1;
-  justify-content: center;
+  justify-content: flex-end;
+  gap: 5px;
+  flex-wrap: nowrap;
 }
-.area-section-title svg { width:13px; height:13px; color:var(--amber); flex-shrink:0; }
-.area-btn-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; flex-wrap: nowrap; }
 
 /* Trips toggle switch */
 .trips-switch-wrap {
@@ -725,15 +717,15 @@ body {
   font-family: var(--sans);
   font-size: 11px;
   font-weight: 500;
-  padding: 5px 8px;
+  padding: 5px 7px;
   cursor: pointer;
-  letter-spacing: .3px;
+  letter-spacing: .2px;
   transition: background .15s;
   -webkit-tap-highlight-color: transparent;
   white-space: nowrap;
   flex-shrink: 0;
 }
-.share-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+.share-btn svg { width: 11px; height: 11px; flex-shrink: 0; }
 .share-btn:active { background: rgba(74,158,255,.1); }
 
 .area-table {
@@ -1119,7 +1111,7 @@ body {
 
     <!-- Data as of bar -->
     <div class="asof-bar" id="asofBar">
-      <span class="asof-bar-label">Data as of</span>
+      <span class="asof-bar-label">Road Despatch as of</span>
       <span class="asof-bar-time" id="asofBarTime">—</span>
       <span class="asof-bar-date" id="asofBarDate">—</span>
       <div id="asofBarWarn" style="display:none" class="asof-bar-warn"></div>
@@ -1127,19 +1119,10 @@ body {
 
     <!-- Section header with controls -->
     <div class="area-section-header">
-      <div class="area-section-title">
-        Road Despatch
-      </div>
       <div class="area-btn-group">
         <div class="area-view-wrap" onclick="toggleSpreadsheet()" title="Spreadsheet view">
           <span class="area-view-label">Sheet</span>
           <div class="switch-track on" id="ssViewTrack">
-            <div class="switch-thumb"></div>
-          </div>
-        </div>
-        <div class="area-view-wrap" onclick="toggleAreaView()" title="Group by Area">
-          <span class="area-view-label">Area</span>
-          <div class="switch-track" id="areaViewTrack">
             <div class="switch-thumb"></div>
           </div>
         </div>
@@ -1328,8 +1311,10 @@ let _ghSha    = null; // current file SHA (needed for GitHub PUT)
 
 function updateDbStatus(syncing) {
   const el = document.getElementById('dbStatus');
+  el.style.cursor = '';
+  el.onclick = null;
   if (syncing) {
-    el.textContent = 'Syncing with cloud…';
+    el.textContent = 'Loading database…';
     el.className = 'db-val';
     return;
   }
@@ -1366,35 +1351,50 @@ function updateDbIndicator(unknownCount) {
 // ── Load DB from GitHub on startup ──────────────────────
 async function loadDbFromGitHub() {
   updateDbStatus(true);
-  try {
-    const headers = { 'Authorization': `token ${GH.token}`, 'Accept': 'application/vnd.github.v3+json' };
+  const headers = { 'Authorization': `token ${GH.token}`, 'Accept': 'application/vnd.github.v3+json' };
 
-    // Step 1: Get file metadata (SHA) via Contents API
-    const metaRes = await fetch(
-      `${GH.api}/repos/${GH.owner}/${GH.repo}/contents/${GH.path}?ref=${GH.branch}&t=${Date.now()}`,
-      { headers }
-    );
-    if (metaRes.status === 404) {
-      _ghSha = null; mclhoDB = {}; mclhoCount = 0;
-      updateDbStatus(false); return;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      // Step 1: Get file metadata (SHA) via Contents API
+      const metaRes = await fetch(
+        `${GH.api}/repos/${GH.owner}/${GH.repo}/contents/${GH.path}?ref=${GH.branch}&t=${Date.now()}`,
+        { headers }
+      );
+      if (metaRes.status === 404) {
+        _ghSha = null; mclhoDB = {}; mclhoCount = 0;
+        updateDbStatus(false); return;
+      }
+      if (!metaRes.ok) throw new Error(`Metadata fetch failed: ${metaRes.status}`);
+      const meta = await metaRes.json();
+      _ghSha = meta.sha;
+
+      // Step 2: Fetch full blob content via Git Blobs API (no size limit)
+      const blobRes = await fetch(
+        `${GH.api}/repos/${GH.owner}/${GH.repo}/git/blobs/${meta.sha}`,
+        { headers: { ...headers, 'Accept': 'application/vnd.github.v3.raw' } }
+      );
+      if (!blobRes.ok) throw new Error(`Blob fetch failed: ${blobRes.status}`);
+      const json = await blobRes.json();
+      mclhoDB    = json.db || {};
+      mclhoCount = Object.keys(mclhoDB).length;
+      updateDbStatus(false);
+      // If despatch already loaded, re-run stats with restored DB
+      if (allRows.length > 0) updateStats();
+      return; // success — exit
+    } catch(e) {
+      console.warn(`DB load attempt ${attempt} failed:`, e);
+      if (attempt < 3) {
+        updateDbStatus(true); // keep showing syncing
+        await new Promise(r => setTimeout(r, 2000 * attempt)); // wait 2s, 4s
+      } else {
+        // All retries failed — show a tap-to-retry message
+        const el = document.getElementById('dbStatus');
+        el.textContent = 'Could not load database — tap to retry';
+        el.className = 'db-val none';
+        el.style.cursor = 'pointer';
+        el.onclick = () => { el.onclick = null; el.style.cursor = ''; loadDbFromGitHub(); };
+      }
     }
-    if (!metaRes.ok) throw new Error(`Metadata fetch failed: ${metaRes.status}`);
-    const meta = await metaRes.json();
-    _ghSha = meta.sha;
-
-    // Step 2: Fetch full blob content via Git Blobs API (no size limit)
-    const blobRes = await fetch(
-      `${GH.api}/repos/${GH.owner}/${GH.repo}/git/blobs/${meta.sha}`,
-      { headers: { ...headers, 'Accept': 'application/vnd.github.v3.raw' } }
-    );
-    if (!blobRes.ok) throw new Error(`Blob fetch failed: ${blobRes.status}`);
-    const json = await blobRes.json();
-    mclhoDB    = json.db || {};
-    mclhoCount = Object.keys(mclhoDB).length;
-    updateDbStatus(false);
-  } catch(e) {
-    console.warn('Could not load DB from GitHub:', e);
-    updateDbStatus(false);
   }
 }
 
@@ -1761,10 +1761,34 @@ function finishLoad() {
     }
   }
 
-  timeFilterMins = null;
-  document.getElementById('timePillVal').textContent = 'Tap to set time';
-  document.getElementById('timePillVal').className   = 'time-pill-val allday';
-  document.getElementById('timeClearBtn').style.display = 'none';
+  // Apply smart default time filter based on current time
+  const nowMins = (() => {
+    const n = new Date();
+    return n.getHours() * 60 + n.getMinutes();
+  })();
+  const T1100 = 11 * 60;       // 11:00 AM
+  const T1330 = 13 * 60 + 30;  // 1:30 PM
+  const T1730 = 17 * 60 + 30;  // 5:30 PM
+
+  if (nowMins >= T1100 && nowMins < T1330) {
+    timeFilterMins = T1100;
+  } else if (nowMins >= T1330 && nowMins < T1730) {
+    timeFilterMins = T1330;
+  } else if (nowMins >= T1730) {
+    timeFilterMins = T1730;
+  } else {
+    timeFilterMins = null; // before 11 AM — no filter
+  }
+
+  if (timeFilterMins !== null) {
+    document.getElementById('timePillVal').textContent = minsToLabel(timeFilterMins);
+    document.getElementById('timePillVal').className   = 'time-pill-val';
+    document.getElementById('timeClearBtn').style.display = 'inline';
+  } else {
+    document.getElementById('timePillVal').textContent = 'Tap to set time';
+    document.getElementById('timePillVal').className   = 'time-pill-val allday';
+    document.getElementById('timeClearBtn').style.display = 'none';
+  }
   document.querySelector('.time-card').style.display = 'block';
 
   document.getElementById('appHeader').classList.add('hidden');
@@ -2132,11 +2156,13 @@ function toggleSpreadsheet() {
   ssViewOn = !ssViewOn;
   document.getElementById('ssViewTrack').classList.toggle('on', ssViewOn);
   applyTableVisibility();
+  if (allRows.length > 0) updateStats();
 }
 
 function toggleAreaView() {
   areaViewOn = !areaViewOn;
-  document.getElementById('areaViewTrack').classList.toggle('on', areaViewOn);
+  document.getElementById('areaViewTrack') && document.getElementById('areaViewTrack').classList.toggle('on', areaViewOn);
+  applyTableVisibility();
   if (allRows.length > 0) updateStats();
 }
 
