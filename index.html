@@ -1367,28 +1367,28 @@ function updateDbIndicator(unknownCount) {
 async function loadDbFromGitHub() {
   updateDbStatus(true);
   try {
-    // First get the SHA via Contents API (lightweight — just metadata)
-    const metaUrl = `${GH.api}/repos/${GH.owner}/${GH.repo}/contents/${GH.path}?ref=${GH.branch}&t=${Date.now()}`;
-    const metaRes = await fetch(metaUrl, {
-      headers: { 'Authorization': `token ${GH.token}`, 'Accept': 'application/vnd.github.v3+json' }
-    });
+    const headers = { 'Authorization': `token ${GH.token}`, 'Accept': 'application/vnd.github.v3+json' };
+
+    // Step 1: Get file metadata (SHA) via Contents API
+    const metaRes = await fetch(
+      `${GH.api}/repos/${GH.owner}/${GH.repo}/contents/${GH.path}?ref=${GH.branch}&t=${Date.now()}`,
+      { headers }
+    );
     if (metaRes.status === 404) {
-      _ghSha = null;
-      mclhoDB = {}; mclhoCount = 0;
-      updateDbStatus(false);
-      return;
+      _ghSha = null; mclhoDB = {}; mclhoCount = 0;
+      updateDbStatus(false); return;
     }
-    if (!metaRes.ok) throw new Error(`GitHub fetch failed: ${metaRes.status}`);
+    if (!metaRes.ok) throw new Error(`Metadata fetch failed: ${metaRes.status}`);
     const meta = await metaRes.json();
     _ghSha = meta.sha;
 
-    // Fetch actual content via raw URL (no size limit)
-    const rawUrl = `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${GH.branch}/${GH.path}?t=${Date.now()}`;
-    const rawRes = await fetch(rawUrl, {
-      headers: { 'Authorization': `token ${GH.token}` }
-    });
-    if (!rawRes.ok) throw new Error(`Raw fetch failed: ${rawRes.status}`);
-    const json = await rawRes.json();
+    // Step 2: Fetch full blob content via Git Blobs API (no size limit)
+    const blobRes = await fetch(
+      `${GH.api}/repos/${GH.owner}/${GH.repo}/git/blobs/${meta.sha}`,
+      { headers: { ...headers, 'Accept': 'application/vnd.github.v3.raw' } }
+    );
+    if (!blobRes.ok) throw new Error(`Blob fetch failed: ${blobRes.status}`);
+    const json = await blobRes.json();
     mclhoDB    = json.db || {};
     mclhoCount = Object.keys(mclhoDB).length;
     updateDbStatus(false);
