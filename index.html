@@ -1016,7 +1016,29 @@ body {
       <span class="tag">.XLS</span>
     </div>
   </div>
-  <p class="privacy-note">All processing happens on-device. Nothing is uploaded.</p>
+  <!-- DO Database card on drop screen -->
+  <div class="db-card" style="width:100%;max-width:400px;">
+    <div class="db-info">
+      <div class="db-label">DO Database</div>
+      <div class="db-val none" id="dbStatusDrop">Loading…</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-shrink:0;">
+      <button class="db-upload-btn" id="pasteBtnDrop" onclick="pasteFromClipboard()" style="border-color:var(--dim);color:var(--dim);">
+        <svg fill="none" stroke="var(--amber)" viewBox="0 0 24 24" style="width:13px;height:13px;">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        Paste
+      </button>
+      <button class="db-upload-btn" onclick="document.getElementById('mclhoInput').click()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        Upload
+      </button>
+    </div>
+  </div>
+  <p class="privacy-note"></p>
 </div>
 
 <!-- ══ DASHBOARD ══════════════════════════════════════ -->
@@ -1061,13 +1083,21 @@ body {
         <span id="dbIndicator" style="display:none;flex-shrink:0;"></span>
       </div>
     </div>
-    <button class="db-upload-btn" id="dbUpdateBtn" onclick="document.getElementById('mclhoInput').click()">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-      </svg>
-      Update
-    </button>
+    <div style="display:flex;gap:6px;flex-shrink:0;">
+      <button class="db-upload-btn" id="pasteBtnDash" onclick="pasteFromClipboard()" style="border-color:var(--dim);color:var(--dim);">
+        <svg fill="none" stroke="var(--amber)" viewBox="0 0 24 24" style="width:13px;height:13px;">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        Paste
+      </button>
+      <button class="db-upload-btn" id="dbUpdateBtn" onclick="document.getElementById('mclhoInput').click()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        Upload
+      </button>
+    </div>
   </div>
 
   <!-- Time filter -->
@@ -1311,19 +1341,44 @@ let _ghSha    = null; // current file SHA (needed for GitHub PUT)
 
 function updateDbStatus(syncing) {
   const el = document.getElementById('dbStatus');
-  el.style.cursor = '';
-  el.onclick = null;
+  const elDrop = document.getElementById('dbStatusDrop');
+  el.style.cursor = ''; el.onclick = null;
   if (syncing) {
-    el.textContent = 'Loading database…';
-    el.className = 'db-val';
+    el.textContent = 'Loading database…'; el.className = 'db-val';
+    if (elDrop) { elDrop.textContent = 'Loading…'; elDrop.className = 'db-val'; }
     return;
   }
   if (mclhoCount === 0) {
-    el.textContent = 'No database loaded — tap Update to load';
-    el.className = 'db-val none';
+    el.textContent = 'No database loaded — tap Update to load'; el.className = 'db-val none';
+    if (elDrop) { elDrop.textContent = 'No database loaded'; elDrop.className = 'db-val none'; }
   } else {
-    el.textContent = 'DO Database loaded';
-    el.className = 'db-val';
+    el.textContent = 'DO Database loaded'; el.className = 'db-val';
+    if (elDrop) { elDrop.textContent = 'DO Database loaded'; elDrop.className = 'db-val'; }
+  }
+}
+
+async function pasteFromClipboard() {
+  try {
+    if (!navigator.clipboard || !navigator.clipboard.readText) {
+      alert('Clipboard access not supported on this browser.\nUse the Update button to upload the mclho file instead.');
+      return;
+    }
+    const text = await navigator.clipboard.readText();
+    if (!text || text.length < 100) {
+      alert('Clipboard content is too small or empty.\nPlease select all (Ctrl+A) and copy (Ctrl+C) the full mclho page in your browser first.');
+      return;
+    }
+    if (!text.includes('DO Number') && !text.includes('DO Date') && !text.includes('Unique Number')) {
+      alert('Clipboard does not appear to contain mclho data.\nPlease select all (Ctrl+A) and copy (Ctrl+C) the mclho page in your browser first.');
+      return;
+    }
+    await parseMclho(text);
+  } catch(e) {
+    if (e.name === 'NotAllowedError') {
+      alert('Clipboard permission denied.\nPlease allow clipboard access when prompted, or use the Upload button instead.');
+    } else {
+      alert(`Could not read clipboard: ${e.message}`);
+    }
   }
 }
 
@@ -1458,7 +1513,7 @@ async function saveDbToGitHub() {
   } catch(e) {
     alert(`Could not save to cloud: ${e.message}\nData is still in memory for this session.`);
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Update'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Upload'; }
   }
 }
 
@@ -1473,33 +1528,51 @@ document.getElementById('mclhoInput').addEventListener('change', e => {
 });
 
 async function parseMclho(raw) {
-  // ── Step 1: Decode quoted-printable on the WHOLE raw file ──────────────
-  // MHTML files from Blink use QP encoding. We decode the entire file first,
-  // then locate the HTML table directly — avoiding fragile boundary splitting.
-  function decodeQP(str) {
-    return str
-      .replace(/=\r?\n/g, '')   // soft line breaks (join wrapped lines)
-      .replace(/=([0-9A-Fa-f]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
-  }
-  const decoded = decodeQP(raw);
+  // ── Step 1: Determine if input is MHTML or plain HTML/text ────────────
+  const isMhtml = raw.includes('MIME-Version:') || raw.includes('Content-Type: multipart/');
 
-  // ── Step 2: Find the <table> containing DO data ────────────────────────
-  // The data table is the one with <th> headers including "DO Number"
-  // We extract from the first <table that contains "DO Number"
-  const tableStart = decoded.indexOf('DO Number');
-  if (tableStart < 0) {
-    alert('DO Number column not found in mclho file. Please check the file.');
-    return;
+  let tableHTML = '';
+
+  if (isMhtml) {
+    // ── MHTML path: decode QP and extract table ──────────────────────
+    function decodeQP(str) {
+      return str.replace(/=\r?\n/g, '').replace(/=([0-9A-Fa-f]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+    }
+    const decoded = decodeQP(raw);
+    const tableStart = decoded.indexOf('DO Number');
+    if (tableStart < 0) { alert('DO Number column not found in mclho file.'); return; }
+    const tableTagIdx = decoded.lastIndexOf('<table', tableStart);
+    const tableEndIdx = decoded.indexOf('</table>', tableStart);
+    if (tableTagIdx < 0 || tableEndIdx < 0) { alert('Could not locate data table in mclho file.'); return; }
+    tableHTML = decoded.slice(tableTagIdx, tableEndIdx + 8);
+  } else {
+    // ── Plain text/HTML path (clipboard) ────────────────────────────
+    const tableStart = raw.indexOf('DO Number');
+    if (tableStart < 0) { alert('DO Number column not found in clipboard content.'); return; }
+    const tableTagIdx = raw.lastIndexOf('<table', tableStart);
+    const tableEndIdx = raw.indexOf('</table>', tableStart);
+    if (tableTagIdx >= 0 && tableEndIdx >= 0) {
+      // Has HTML table tags
+      tableHTML = raw.slice(tableTagIdx, tableEndIdx + 8);
+    } else {
+      // Plain text — convert tab/newline rows into fake HTML table for unified parsing
+      const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+      // Find header row containing 'DO Number' or 'Sl No'
+      const hdrIdx = lines.findIndex(l => l.includes('DO Number') || (l.includes('Sl') && l.includes('Unique')));
+      if (hdrIdx < 0) { alert('Could not find column headers in clipboard.'); return; }
+      let fakeTable = '<table>';
+      // Header
+      fakeTable += '<tr>' + lines[hdrIdx].split('\t').map(h => `<th>${h}</th>`).join('') + '</tr>';
+      // Data rows
+      for (let i = hdrIdx + 1; i < lines.length; i++) {
+        const cols = lines[i].split('\t');
+        if (cols.length < 5) continue;
+        fakeTable += '<tr>' + cols.map(c => `<td>${c}</td>`).join('') + '</tr>';
+      }
+      fakeTable += '</table>';
+      tableHTML = fakeTable;
+    }
   }
-  // Walk back to find the opening <table tag
-  const tableTagIdx = decoded.lastIndexOf('<table', tableStart);
-  if (tableTagIdx < 0) {
-    alert('Could not locate data table in mclho file.');
-    return;
-  }
-  // Find the matching </table>
-  const tableEndIdx = decoded.indexOf('</table>', tableStart);
-  const tableHTML = decoded.slice(tableTagIdx, tableEndIdx + 8);
 
   // Parse just the table
   const doc = new DOMParser().parseFromString(
@@ -1542,7 +1615,7 @@ async function parseMclho(raw) {
     parsed++;
   }
 
-  if (parsed === 0) { alert('No data rows found in mclho file. Please check the file.'); return; }
+  if (parsed === 0) { alert('No DO data rows found. Please check the source and try again.'); return; }
 
   // Second pass: merge into mclhoDB
   let added = 0, updated = 0, unchanged = 0;
