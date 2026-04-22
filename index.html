@@ -368,7 +368,7 @@ body {
 .modal-backdrop {
   position: fixed; inset: 0;
   background: rgba(0,0,0,.72);
-  z-index: 200;
+  z-index: 3000;
   display: none;
   align-items: flex-end;        /* sheet slides up from bottom on mobile */
   justify-content: center;
@@ -566,6 +566,14 @@ body {
 /* ── SHEET FOOTER ── */
 /* ── SETTINGS MODAL ──────────────────────────────── */
 /* ── Custom Time Picker ─────────────────────────── */
+.stt-time-btn {
+  width: 100%; padding: 6px 10px;
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 8px; cursor: pointer;
+  font-family: var(--mono); font-size: 13px; color: var(--text);
+  text-align: left; transition: border-color .15s;
+}
+.stt-time-btn:hover { border-color: var(--amber); }
 .stt-time-picker {
   position: relative; display: inline-flex;
   align-items: center; gap: 6px;
@@ -584,7 +592,7 @@ body {
   display: none; position: fixed;
   background: var(--surface); border: 1.5px solid var(--border);
   border-radius: 16px; box-shadow: 0 16px 48px rgba(0,0,0,.28);
-  z-index: 9999; padding: 16px; width: 248px;
+  z-index: 10000; padding: 16px; width: 248px;
 }
 .stt-time-picker.open .stt-clock-popup { display: block; }
 .stt-clock-header {
@@ -747,7 +755,6 @@ body {
   padding: 5px 4px;
   gap: 4px;
   transition: transform .18s cubic-bezier(.25,.46,.45,.94);
-  will-change: transform;
 }
 .stt-slot-row:first-child { border-top: none; }
 .stt-slot-row:nth-child(even) { background: var(--bg); }
@@ -778,7 +785,6 @@ body {
   padding: 4px;
   gap: 4px;
   transition: transform .18s cubic-bezier(.25,.46,.45,.94);
-  will-change: transform;
 }
 .stt-mine-row:first-child { border-top: none; }
 .stt-mine-row:nth-child(even) { background: var(--bg); }
@@ -2598,17 +2604,15 @@ let clockAP = 'AM';
 let clockMode = 'hour';
 let clockDragging = false;
 
-function openClock() {
-  if (timeFilterMins !== null) {
-    const h24 = Math.floor(timeFilterMins / 60);
-    clockM  = timeFilterMins % 60;
-    clockAP = h24 < 12 ? 'AM' : 'PM';
-    clockH  = h24 % 12 || 12;
-  } else {
-    clockH = 12; clockM = 0; clockAP = 'AM';
-  }
-  clockMode = 'hour';
-  renderClock();
+let _clockCallback = null;
+function openClock(initMins, callback) {
+  _clockCallback = callback || null;
+  const mins = (initMins !== undefined && initMins !== null) ? initMins : timeFilterMins;
+  if (mins !== null && mins !== undefined) {
+    const h24 = Math.floor(mins/60);
+    clockM = mins%60; clockAP = h24<12?'AM':'PM'; clockH = h24%12||12;
+  } else { clockH=12; clockM=0; clockAP='AM'; }
+  clockMode='hour'; renderClock();
   document.getElementById('modalBackdrop').classList.add('open');
 }
 
@@ -2722,15 +2726,15 @@ function handleClockInput(e) {
 }
 
 function applyTime() {
-  let h24 = clockH % 12;
-  if (clockAP === 'PM') h24 += 12;
-  timeFilterMins = h24 * 60 + clockM;
-  if (activeTabDate) tabTimeFilters[activeTabDate] = timeFilterMins;
-  document.getElementById('timePillVal').textContent = minsToLabel(timeFilterMins);
-  document.getElementById('timePillVal').className   = 'time-pill-val';
-  document.getElementById('timeClearBtn').style.display = 'inline';
-  closeClock();
-  updateStats();
+  let h24 = clockH%12; if (clockAP==='PM') h24+=12;
+  const mins = h24*60+clockM;
+  if (_clockCallback) { _clockCallback(mins); _clockCallback=null; closeClock(); return; }
+  timeFilterMins=mins;
+  if (activeTabDate) tabTimeFilters[activeTabDate]=timeFilterMins;
+  document.getElementById('timePillVal').textContent=minsToLabel(timeFilterMins);
+  document.getElementById('timePillVal').className='time-pill-val';
+  document.getElementById('timeClearBtn').style.display='inline';
+  closeClock(); updateStats();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -3302,133 +3306,39 @@ function downloadBlob(blob) {
 // ═══════════════════════════════════════════════════════
 //  CUSTOM TIME PICKER
 // ═══════════════════════════════════════════════════════
-let _activeTimePicker = null;
-
-function createTimePicker(value, onChange) {
-  let h24 = 11, m = 0;
-  if (value) { const p = value.split(':'); h24 = parseInt(p[0])||0; m = parseInt(p[1])||0; }
-  let ampm = h24 < 12 ? 'AM' : 'PM';
-  let h12  = h24 % 12 || 12;
-  let mode = 'hour';
-
-  function get24() { return (ampm==='AM'?(h12===12?0:h12):(h12===12?12:h12+12))*60+m; }
-  function valStr() { const t=get24(); return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0'); }
-  function dispStr() { return h12+':'+String(m).padStart(2,'0')+' '+ampm; }
-
-  const wrap   = document.createElement('div'); wrap.className = 'stt-time-picker';
-  const valSpan= document.createElement('span'); valSpan.className='stt-time-picker-val';
-  const icon   = document.createElement('span'); icon.className='stt-time-picker-icon'; icon.textContent='\u23f0';
-  const hidden = document.createElement('input'); hidden.type='hidden';
-  const popup  = document.createElement('div'); popup.className='stt-clock-popup';
-
-  const hdr = document.createElement('div'); hdr.className='stt-clock-header';
-  const disp= document.createElement('div'); disp.className='stt-clock-display';
-  const ampmWrap = document.createElement('div'); ampmWrap.className='stt-clock-ampm';
-  const amBtn = document.createElement('button'); amBtn.className='stt-ampm-btn'; amBtn.type='button'; amBtn.textContent='AM';
-  const pmBtn = document.createElement('button'); pmBtn.className='stt-ampm-btn'; pmBtn.type='button'; pmBtn.textContent='PM';
-  amBtn.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); ampm='AM'; update(); });
-  pmBtn.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); ampm='PM'; update(); });
-  ampmWrap.append(amBtn, pmBtn); hdr.append(disp, ampmWrap);
-
-  const R=88, CX=100, CY=100, NS='http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(NS,'svg');
-  svg.setAttribute('viewBox','0 0 200 200'); svg.setAttribute('width','216'); svg.setAttribute('height','216');
-  svg.className='stt-clock-svg';
-  const face=document.createElementNS(NS,'circle'); face.setAttribute('cx',CX); face.setAttribute('cy',CY); face.setAttribute('r',R); face.setAttribute('class','stt-clock-face'); svg.appendChild(face);
-  for (let i=0;i<60;i++) {
-    const ang=(i/60)*2*Math.PI-Math.PI/2, isMaj=i%5===0;
-    const r1=isMaj?R-10:R-5;
-    const ln=document.createElementNS(NS,'line');
-    ln.setAttribute('x1',CX+Math.cos(ang)*r1); ln.setAttribute('y1',CY+Math.sin(ang)*r1);
-    ln.setAttribute('x2',CX+Math.cos(ang)*(R-2)); ln.setAttribute('y2',CY+Math.sin(ang)*(R-2));
-    ln.setAttribute('class','stt-clock-tick'+(isMaj?' major':'')); svg.appendChild(ln);
-    if (isMaj) {
-      const hn=i/5||12, nr=R-22;
-      const txt=document.createElementNS(NS,'text');
-      txt.setAttribute('x',CX+Math.cos(ang)*nr); txt.setAttribute('y',CY+Math.sin(ang)*nr);
-      txt.setAttribute('class','stt-clock-num'); txt.textContent=hn; svg.appendChild(txt);
-    }
+function createTimePicker(initVal, onChange) {
+  function toMins(hhmm) {
+    if (!hhmm) return null;
+    const [h,m] = hhmm.split(':').map(Number); return h*60+m;
   }
-  const handH=document.createElementNS(NS,'line'); handH.setAttribute('class','stt-clock-hand-h'); svg.appendChild(handH);
-  const handM=document.createElementNS(NS,'line'); handM.setAttribute('class','stt-clock-hand-m'); svg.appendChild(handM);
-  const ctr=document.createElementNS(NS,'circle'); ctr.setAttribute('cx',CX); ctr.setAttribute('cy',CY); ctr.setAttribute('r','5'); ctr.setAttribute('class','stt-clock-center'); svg.appendChild(ctr);
-
-  const modeRow=document.createElement('div'); modeRow.className='stt-clock-mode';
-  const hBtn=document.createElement('button'); hBtn.className='stt-clock-mode-btn'; hBtn.type='button'; hBtn.textContent='HH';
-  const mBtn=document.createElement('button'); mBtn.className='stt-clock-mode-btn'; mBtn.type='button'; mBtn.textContent='MM';
-  hBtn.addEventListener('mousedown', e=>{e.preventDefault();e.stopPropagation();mode='hour';update();});
-  mBtn.addEventListener('mousedown', e=>{e.preventDefault();e.stopPropagation();mode='min';update();});
-  modeRow.append(hBtn,mBtn);
-  const okBtn=document.createElement('button'); okBtn.className='stt-clock-ok'; okBtn.type='button'; okBtn.textContent='Done';
-  okBtn.addEventListener('mousedown', e=>{e.preventDefault();e.stopPropagation();wrap.classList.remove('open');_activeTimePicker=null;});
-
-  popup.append(hdr,svg,modeRow,okBtn);
-  wrap.append(valSpan,icon,popup,hidden);
-
-  svg.addEventListener('mousedown', e=>{
-    e.preventDefault(); e.stopPropagation();
-    const rect=svg.getBoundingClientRect();
-    const px=e.clientX-rect.left-rect.width/2;
-    const py=e.clientY-rect.top-rect.height/2;
-    const ang=Math.atan2(py,px)+Math.PI/2;
-    const norm=((ang/(2*Math.PI))+1)%1;
-    if (mode==='hour') { h12=Math.round(norm*12)||12; mode='min'; }
-    else { m=Math.round(norm*60)%60; }
-    update();
+  function fromMins(mins) {
+    if (mins===null||mins===undefined) return '';
+    return String(Math.floor(mins/60)).padStart(2,'0')+':'+String(mins%60).padStart(2,'0');
+  }
+  function fmt(hhmm) {
+    if (!hhmm) return '—';
+    const [h24,m]=hhmm.split(':').map(Number);
+    const ap=h24<12?'AM':'PM', h12=h24%12||12;
+    return h12+':'+String(m).padStart(2,'0')+' '+ap;
+  }
+  let cur = initVal||'';
+  const hidden=document.createElement('input'); hidden.type='hidden'; hidden.value=cur;
+  const btn=document.createElement('button'); btn.type='button'; btn.className='stt-time-btn';
+  btn.textContent=fmt(cur);
+  btn.addEventListener('click', e=>{
+    e.stopPropagation();
+    openClock(toMins(cur), mins=>{
+      cur=fromMins(mins); hidden.value=cur; btn.textContent=fmt(cur);
+      if(onChange) onChange(cur);
+    });
   });
-
-  function drawHands() {
-    const hAng=((h12%12)/12+m/720)*2*Math.PI-Math.PI/2;
-    const mAng=(m/60)*2*Math.PI-Math.PI/2;
-    handH.setAttribute('x1',CX); handH.setAttribute('y1',CY);
-    handH.setAttribute('x2',CX+Math.cos(hAng)*R*0.52); handH.setAttribute('y2',CY+Math.sin(hAng)*R*0.52);
-    handM.setAttribute('x1',CX); handM.setAttribute('y1',CY);
-    handM.setAttribute('x2',CX+Math.cos(mAng)*R*0.72); handM.setAttribute('y2',CY+Math.sin(mAng)*R*0.72);
-    handH.style.opacity=mode==='hour'?'1':'0.3';
-    handM.style.opacity=mode==='min'?'1':'0.3';
-  }
-
-  function update() {
-    hidden.value=valStr(); valSpan.textContent=dispStr();
-    disp.innerHTML='<span class="'+(mode==='hour'?'active':'')+'">'+String(h12).padStart(2,'0')+'</span>'
-      +'<span style="color:var(--dim)">:</span>'
-      +'<span class="'+(mode==='min'?'active':'')+'">'+String(m).padStart(2,'0')+'</span>'
-      +'<span style="font-size:13px;color:var(--dim);margin-left:4px;">'+ampm+'</span>';
-    amBtn.classList.toggle('active',ampm==='AM'); pmBtn.classList.toggle('active',ampm==='PM');
-    hBtn.classList.toggle('active',mode==='hour'); mBtn.classList.toggle('active',mode==='min');
-    drawHands();
-    if (onChange) onChange(valStr());
-  }
-  update();
-
-  wrap.addEventListener('mousedown', e=>{
-    if (popup.contains(e.target)) return;
-    e.preventDefault();
-    const isOpen=wrap.classList.contains('open');
-    if (_activeTimePicker&&_activeTimePicker!==wrap) _activeTimePicker.classList.remove('open');
-    if (!isOpen) {
-      const rect=wrap.getBoundingClientRect();
-      popup.style.left=rect.left+'px';
-      popup.style.top=(rect.bottom+8)+'px';
-      if (rect.bottom+320>window.innerHeight) popup.style.top=(rect.top-320)+'px';
-      wrap.classList.add('open'); _activeTimePicker=wrap;
-    } else { wrap.classList.remove('open'); _activeTimePicker=null; }
-  });
-
-  return { el:wrap, getValue:valStr, setValue(v) {
-    if (!v) return;
-    const p=v.split(':'); h24=parseInt(p[0])||0; m=parseInt(p[1])||0;
-    ampm=h24<12?'AM':'PM'; h12=h24%12||12; update();
-  }};
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;align-items:center;width:100%;';
+  wrap.appendChild(btn); wrap.appendChild(hidden);
+  return { el:wrap, getValue:()=>cur, setValue(v){cur=v||'';hidden.value=cur;btn.textContent=fmt(cur);} };
 }
 
-// Close picker on outside mousedown
-document.addEventListener('mousedown', e => {
-  if (_activeTimePicker && !_activeTimePicker.contains(e.target)) {
-    _activeTimePicker.classList.remove('open');
-    _activeTimePicker = null;
-  }
-});
+
 
 const SETTINGS_GH = {
   owner:  'ajoneschristo',
