@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ePass MCL Coalnet Viewer</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root {
@@ -737,7 +737,7 @@ body {
 }
 .stt-slots-head {
   display: grid;
-  grid-template-columns: 24px 1fr 80px 1fr 36px;
+  grid-template-columns: 24px 1fr 72px 1fr 36px;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
   padding: 0 4px;
@@ -749,7 +749,7 @@ body {
 }
 .stt-slot-row {
   display: grid;
-  grid-template-columns: 24px 1fr 80px 1fr 36px;
+  grid-template-columns: 24px 1fr 72px 1fr 36px;
   align-items: center;
   border-top: 1px solid var(--border);
   padding: 5px 4px;
@@ -981,17 +981,25 @@ body {
 .area-section-header {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   margin-top: 8px;
   margin-bottom: 8px;
-  gap: 5px;
+  gap: 4px;
+  flex-wrap: nowrap;
 }
 .area-btn-group {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 5px;
+  gap: 4px;
   flex-wrap: nowrap;
+  flex: 1;
+}
+/* Compact buttons on mobile */
+@media (max-width: 480px) {
+  .share-btn { font-size: 10px !important; padding: 4px 6px !important; gap: 2px !important; }
+  .share-btn svg { width: 10px !important; height: 10px !important; }
+  .area-view-label, .trips-switch-label { font-size: 10px; }
 }
 
 /* Trips toggle switch */
@@ -1046,7 +1054,7 @@ body {
   white-space: nowrap;
   flex-shrink: 0;
 }
-.share-btn svg { width: 11px; height: 11px; flex-shrink: 0; }
+.share-btn svg { width: 11px; height: 11px; flex-shrink: 0; transition: width .1s, height .1s; }
 .share-btn:active { background: rgba(74,158,255,.1); }
 
 .area-table {
@@ -1285,6 +1293,256 @@ body {
 .ss-table tr:last-child td { border-bottom: none; }
 .ss-table.hide-trips .ss-col-trips { display: none; }
 
+/* ══════════════════════════════════════════════════════
+   GSheet table — Material Design, pastel zebra
+   ══════════════════════════════════════════════════════ */
+
+/* Material palette — lighter pastels */
+:root {
+  /* Base */
+  --gs-surface:     #ffffff;
+  --gs-surface-2:   #fafaf8;    /* zebra — warm white */
+  --gs-text:        #111111;
+  --gs-text-dim:    #707070;
+  --gs-hover:       #f0f4ff;
+
+  /* Header — soft sage */
+  --gs-header-bg:   #eef2eb;
+  --gs-header-text: #1a3220;
+
+  /* Dividers — warm stone */
+  --gs-divider:     #e4e2dc;
+  --gs-divider-h:   #c8c4b8;
+
+  /* CF rows — blush rose, very light */
+  --gs-cf-bg:       #fdf0f0;
+  --gs-cf-text:     #5a1a1a;
+
+  /* MCL row — soft gold */
+  --gs-mcl-bg:      #fdf6e4;
+  --gs-mcl-text:    #4a3800;
+
+  /* Highest rows — pale sky */
+  --gs-highest-bg:  #f0f5ff;
+  --gs-highest-txt: #1a3060;
+
+  /* Column tints */
+  --gs-col-balance: #f4f2ff;   /* lavender — RDO Balance */
+  --gs-col-target:  #f0faf4;   /* mint — Target */
+}
+body.dark {
+  --gs-surface:     #1c1c1a;
+  --gs-surface-2:   #181816;
+  --gs-text:        #ddd8d0;
+  --gs-text-dim:    #686460;
+  --gs-hover:       #1e2030;
+
+  --gs-header-bg:   #1e2820;
+  --gs-header-text: #7aaa80;
+
+  --gs-divider:     #2c2c28;
+  --gs-divider-h:   #484440;
+
+  --gs-cf-bg:       #2c1e1e;
+  --gs-cf-text:     #c08080;
+
+  --gs-mcl-bg:      #2c2610;
+  --gs-mcl-text:    #c0a840;
+
+  --gs-highest-bg:  #1a1e2c;
+  --gs-highest-txt: #7090c0;
+
+  --gs-col-balance: #1e1c30;   /* dark lavender odd */
+  --gs-col-balance-2: #18162a; /* dark lavender even */
+  --gs-col-target:  #162018;   /* dark mint odd */
+  --gs-col-target-2: #121a14;  /* dark mint even */
+}
+
+.ss-gsheet-table {
+  font-size: 12.5px;
+  border-collapse: collapse;
+  width: 100%;
+  background: var(--gs-surface);
+  border: 1px solid var(--gs-divider-h);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+}
+
+/* Caption */
+.ss-gsheet-table caption {
+  caption-side: top;
+  text-align: center;
+  padding: 8px 14px 6px;
+  font-size: 13px;
+  font-family: var(--mono);
+  letter-spacing: .08em;
+  color: var(--gs-header-text);
+  text-transform: uppercase;
+  background: var(--gs-header-bg);
+  border-bottom: 1px solid var(--gs-divider);
+}
+
+/* ── Header ── */
+.ss-gsheet-table thead tr { background: var(--gs-header-bg); }
+.ss-gsheet-table th {
+  font-family: var(--sans);
+  font-size: clamp(11px, 1.3vw, 13px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--gs-header-text);
+  padding: 10px 12px;
+  border-top: 2px solid var(--gs-divider-h);
+  border-bottom: 2px solid var(--gs-divider-h);
+  border-right: 1px solid var(--gs-divider);
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+  vertical-align: middle;
+  max-width: 80px;
+  line-height: 1.3;
+  position: sticky;
+  top: 0;
+  background: var(--gs-header-bg);
+  z-index: 1;
+}
+.ss-gsheet-table th:last-child  { border-right: none; }
+.ss-gsheet-table th:first-child {
+  text-align: left;
+  min-width: 90px;
+  max-width: 130px;
+  white-space: nowrap;
+  border-right: 2px solid var(--gs-divider-h);
+}
+/* RDO Balance header tint */
+.ss-gsheet-table th:nth-child(2) { background: #eeeaf8; } /* lavender tint on RDO Balance header */
+.ss-gsheet-table th:nth-child(3) { background: #e8f5ee; } /* mint tint on Target header */
+
+/* ── Data cells ── */
+.ss-gsheet-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--gs-divider);
+  border-right: 1px solid var(--gs-divider);
+  white-space: nowrap;
+  text-align: right;
+  vertical-align: middle;
+  font-family: var(--mono);
+  font-size: clamp(13px, 1.7vw, 16px);
+  font-variant-numeric: tabular-nums;
+  color: var(--gs-text);
+  transition: background .12s;
+  /* No inline background — controlled entirely by rules below */
+}
+.ss-gsheet-table td:last-child  {
+  border-right: none;
+  text-align: left !important;
+  padding: 5px 6px !important;
+  white-space: normal;
+  font-family: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  line-height: 1.25;
+  vertical-align: middle;
+}
+.ss-gsheet-table td:first-child {
+  text-align: left;
+  font-family: var(--sans);
+  font-size: clamp(13px, 1.7vw, 16px);
+  font-weight: 500;
+  color: var(--gs-text);
+  border-right: 2px solid var(--gs-divider-h);
+}
+.ss-gsheet-table tr:last-child td { border-bottom: none; }
+
+/* ── Full-row zebra on plain data rows only ── */
+.ss-gsheet-table tbody tr:nth-child(even) td         { background: var(--gs-surface-2); }
+.ss-gsheet-table tbody tr:nth-child(odd)  td         { background: var(--gs-surface); }
+
+/* ── Column tints — RDO Balance (col 2) lavender, Target (col 3) mint ── */
+/* Odd rows: base tint. Even rows: slightly deeper same hue for zebra effect */
+.ss-gsheet-table tbody tr:nth-child(odd)  td:nth-child(2) { background: #f4f2ff !important; }
+.ss-gsheet-table tbody tr:nth-child(even) td:nth-child(2) { background: #ece9fa !important; }
+.ss-gsheet-table tbody tr:nth-child(odd)  td:nth-child(3) { background: #f0faf4 !important; }
+.ss-gsheet-table tbody tr:nth-child(even) td:nth-child(3) { background: #e4f4ea !important; }
+
+/* Don't apply column tints to special rows — let their bg show through */
+.ss-gsheet-table .gs-bold    td:nth-child(2),
+.ss-gsheet-table .gs-bold    td:nth-child(3),
+.ss-gsheet-table .gs-mcl     td:nth-child(2),
+.ss-gsheet-table .gs-mcl     td:nth-child(3),
+.ss-gsheet-table .gs-highest td:nth-child(2),
+.ss-gsheet-table .gs-highest td:nth-child(3) { background: inherit !important; }
+
+/* Hover overrides everything */
+.ss-gsheet-table tbody tr:hover td { background: var(--gs-hover) !important; transition: background .08s; }
+
+/* ── CF total rows (IBCF / TCF) ── */
+.ss-gsheet-table .gs-bold td {
+  background: var(--gs-cf-bg) !important;
+  font-weight: 700;
+  border-top: 2px solid var(--gs-divider-h);
+  border-bottom: 1px solid var(--gs-divider);
+  font-size: clamp(14px, 1.8vw, 17px);
+  color: var(--gs-text);
+}
+.ss-gsheet-table .gs-bold td:first-child {
+  color: var(--gs-cf-text, var(--gs-header-text));
+  font-family: var(--sans);
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+
+/* ── MCL grand total ── */
+.ss-gsheet-table tr.gs-mcl td {
+  background: var(--gs-mcl-bg) !important;
+  font-weight: 800;
+  border-top: 3px solid var(--gs-divider-h);
+  font-size: clamp(15px, 2.0vw, 18px);
+  color: var(--gs-text);
+}
+.ss-gsheet-table tr.gs-mcl td:first-child {
+  color: var(--gs-mcl-text);
+  font-family: var(--sans);
+  font-weight: 800;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+
+/* ── Highest rows ── */
+.ss-gsheet-table .gs-highest td {
+  background: var(--gs-highest-bg) !important;
+  font-family: var(--mono);
+  font-size: clamp(14px, 1.8vw, 17px);
+  font-weight: 500;
+  color: var(--gs-highest-txt);
+  border-bottom: 2px solid var(--gs-divider);
+  padding-top: 4px;
+  padding-bottom: 6px;
+}
+.ss-gsheet-table .gs-highest td:first-child {
+  font-family: var(--sans);
+  font-size: clamp(13px, 1.5vw, 15px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--gs-text-dim);
+  border-right: 2px solid var(--gs-divider-h);
+  padding-left: 20px;
+}
+
+/* loading spinner */
+.gs-spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid var(--edge);
+  border-top-color: var(--amber);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (min-width: 480px) {
@@ -1312,6 +1570,7 @@ body {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B71-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -1367,6 +1626,31 @@ body {
     </div>
   </div>
   <p class="privacy-note"></p>
+
+  <!-- Sheet view on home screen (shown when Sheet toggle ON, no file needed) -->
+  <div id="ssGSheetWrapDrop" style="display:none;width:100%;max-width:900px;margin-top:8px;">
+    <div id="ssGSheetStatusDrop" style="padding:18px 14px;text-align:center;font-size:13px;color:var(--dim);display:none;"></div>
+    <!-- Toolbar for drop screen sheet view -->
+    <div id="hideEmptyWrapDrop" style="width:100%;padding:4px 10px 8px;box-sizing:border-box;display:none;align-items:center;justify-content:flex-end;gap:6px;">
+        <button class="share-btn" onclick="fetchAndRenderGSheet()" title="Refresh sheet data" style="border-color:var(--blue);color:var(--blue);">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Refresh
+      </button>
+      <button class="share-btn" onclick="shareReport()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+        </svg>
+        Share
+      </button>
+    </div>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+      <table class="ss-table ss-gsheet-table" id="ssTableDrop" style="display:none;width:100%;border-collapse:collapse;"></table>
+    </div>
+  </div>
 </div>
 
 <!-- ══ DASHBOARD ══════════════════════════════════════ -->
@@ -1484,19 +1768,25 @@ body {
 
     <!-- Section header with controls -->
     <div class="area-section-header">
-      <div class="area-btn-group">
+      <!-- Left: Sheet toggle -->
+      <div style="display:flex;align-items:center;gap:6px;">
         <div class="area-view-wrap" onclick="toggleSpreadsheet()" title="Spreadsheet view">
           <span class="area-view-label">Sheet</span>
           <div class="switch-track on" id="ssViewTrack">
             <div class="switch-thumb"></div>
           </div>
         </div>
-        <div class="trips-switch-wrap" onclick="toggleTrips()">
-          <span class="trips-switch-label">Trips</span>
-          <div class="switch-track" id="tripsSwitchTrack">
-            <div class="switch-thumb"></div>
-          </div>
-        </div>
+
+      </div>
+      <!-- Right: action buttons -->
+      <div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap;justify-content:flex-end;">
+        <button class="share-btn" id="refreshSheetBtn" onclick="fetchAndRenderGSheet()" title="Refresh sheet data" style="display:none;border-color:var(--blue);color:var(--blue);">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Refresh
+        </button>
         <button class="share-btn" id="shareBtn" onclick="shareReport()">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1505,13 +1795,13 @@ body {
           Share
         </button>
         <button class="share-btn" id="xlsBtn" onclick="exportXls()" title="Export to Excel" style="border-color:var(--green);color:var(--green);">
-          <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8.5 16.5l1.5-2.5-1.5-2.5h1.3l.9 1.6.9-1.6H13l-1.5 2.5 1.5 2.5h-1.3l-.9-1.6-.9 1.6H8.5z"/>
           </svg>
           XLSX
         </button>
         <button class="share-btn" id="sheetPushBtn" onclick="pushToSheet()" title="Push to Google Sheet" style="border-color:#0f9d58;color:#0f9d58;">
-          <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;">
             <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 14l-5-5 1.41-1.41L11 13.17V7h2v6.17l2.59-2.59L17 12l-5 5z"/>
           </svg>
           Sheet
@@ -1519,17 +1809,13 @@ body {
       </div>
     </div>
 
-    <!-- Spreadsheet view table (shown when Sheet toggle ON) -->
-    <table class="ss-table hide-trips" id="ssTable" style="display:none">
-      <thead>
-        <tr>
-          <th class="ss-col-name">Project</th>
-          <th class="ss-col-trips">Trips</th>
-          <th class="ss-col-qty">Despatch Qty (T)</th>
-        </tr>
-      </thead>
-      <tbody id="ssTableBody"></tbody>
-    </table>
+    <!-- Sheet view: live Google Sheet fetch (shown when Sheet toggle ON) -->
+    <div id="ssGSheetWrap" style="display:none;">
+      <div id="ssGSheetStatus" style="padding:18px 14px;text-align:center;font-size:13px;color:var(--dim);display:none;"></div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <table class="ss-table ss-gsheet-table" id="ssTable" style="display:none;width:100%;border-collapse:collapse;"></table>
+      </div>
+    </div>
 
     <!-- Area / Colliery table (hidden when Sheet toggle ON) -->
     <table class="area-table hide-trips" id="areaTable" style="display:none">
@@ -2025,6 +2311,7 @@ let currentTabMaxDateStr = '';
 let tripsVisible  = false;
 let areaViewOn    = false;
 let ssViewOn      = true;   // Spreadsheet view ON by default
+const gsHideEmpty = true;   // Always hide empty columns
 let lastUnknownDOs = new Set();
 
 // ═══════════════════════════════════════════════════════
@@ -2334,6 +2621,7 @@ function updateStats() {
 
   renderAreaTable(colAcc, unknownG, unknownT, unknownTrips);
   renderSpreadsheet(colAcc);
+  if (ssViewOn) fetchAndRenderGSheet();
 
   // "Data as of" bar
   let tabMaxMins = -1, tabMaxTimeStr = '', tabMaxDateStr = '';
@@ -2521,64 +2809,319 @@ function clearTime() {
 //  SPREADSHEET TABLE RENDER
 // ═══════════════════════════════════════════════════════
 function renderSpreadsheet(colAcc) {
-  const tbody = document.getElementById('ssTableBody');
-  const frag  = document.createDocumentFragment();
-
-  const addRow = (cls, name, trips, qty) => {
-    const tr = document.createElement('tr');
-    if (cls) tr.className = cls;
-    const tdN = document.createElement('td'); tdN.className = 'ss-col-name';  tdN.textContent = name;
-    const tdT = document.createElement('td'); tdT.className = 'ss-col-trips'; tdT.textContent = trips !== null ? trips.toLocaleString() : '';
-    const tdQ = document.createElement('td'); tdQ.className = 'ss-col-qty';   tdQ.textContent = qty !== null ? fmt(qty) : '';
-    tr.appendChild(tdN); tr.appendChild(tdT); tr.appendChild(tdQ);
-    frag.appendChild(tr);
-  };
-
-  let cfNet = 0, cfTrips = 0;
-  let mclNet = 0, mclTrips = 0;
-
-  for (const row of SS_ROWS) {
-    if (row.isMCLTotal) {
-      addRow('ss-mcl-total', 'MCL', mclTrips, mclNet);
-    } else if (row.isCFTotal) {
-      addRow('ss-cf-total', row.label, cfTrips, cfNet);
-      mclNet   += cfNet;
-      mclTrips += cfTrips;
-      cfNet = 0; cfTrips = 0;
-    } else {
-      // Sum across all listed colliery codes
-      let g = 0, t = 0, trips = 0;
-      for (const code of row.codes) {
-        const acc = colAcc[code];
-        if (acc) { g += acc.g; t += acc.t; trips += acc.trips; }
-      }
-      const net = g - t;
-      cfNet   += net;
-      cfTrips += trips;
-      const cls = net === 0 ? 'ss-zero' : '';
-      addRow(cls, row.label, trips, net);
-    }
-  }
-
-  tbody.innerHTML = '';
-  tbody.appendChild(frag);
+  // Sheet view now shows live Google Sheet data (fetched via gviz API).
+  // This function is kept as a no-op; the live fetch is triggered by toggleSpreadsheet().
 }
 
 // ═══════════════════════════════════════════════════════
 //  VIEW TOGGLES
 // ═══════════════════════════════════════════════════════
 function applyTableVisibility() {
-  const ssTable   = document.getElementById('ssTable');
-  const areaTable = document.getElementById('areaTable');
-  ssTable.style.display   = ssViewOn ? '' : 'none';
-  areaTable.style.display = ssViewOn ? 'none' : '';
+  const ssWrap     = document.getElementById('ssGSheetWrap');
+  const ssWrapDrop = document.getElementById('ssGSheetWrapDrop');
+  const areaTable  = document.getElementById('areaTable');
+  const refreshBtn = document.getElementById('refreshSheetBtn');
+  ssWrap.style.display     = ssViewOn ? '' : 'none';
+  ssWrapDrop.style.display = ssViewOn ? '' : 'none';
+  const dw = document.getElementById('hideEmptyWrapDrop');
+  if (dw) dw.style.display = ssViewOn ? 'flex' : 'none';
+  const xlsB = document.getElementById('xlsBtn');
+  if (xlsB) xlsB.style.display = ssViewOn ? 'none' : '';
+  areaTable.style.display  = ssViewOn ? 'none' : '';
+  if (refreshBtn) refreshBtn.style.display = ssViewOn ? '' : 'none';
 }
 
 function toggleSpreadsheet() {
   ssViewOn = !ssViewOn;
   document.getElementById('ssViewTrack').classList.toggle('on', ssViewOn);
   applyTableVisibility();
-  if (allRows.length > 0) updateStats();
+  if (ssViewOn) fetchAndRenderGSheet();
+  else if (allRows.length > 0) updateStats();
+}
+
+// ── Parse Sheet ID and gid from a Google Sheets URL ──
+function parseSheetUrl(url) {
+  const idMatch  = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+  const gidMatch = url.match(/[#&?]gid=(\d+)/);
+  return {
+    id:  idMatch  ? idMatch[1]  : null,
+    gid: gidMatch ? gidMatch[1] : '0',
+  };
+}
+
+// ── Parse a range string like "I6:O28" into parts ──
+function parseRange(range) {
+  const m = range.trim().match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/i);
+  if (!m) return null;
+  return { startCol: m[1].toUpperCase(), startRow: parseInt(m[2]), endCol: m[3].toUpperCase(), endRow: parseInt(m[4]) };
+}
+
+// ── Expand range upward by n rows (but not below row 1) ──
+function expandRangeUp(range, n) {
+  const p = parseRange(range);
+  if (!p) return range;
+  const newStart = Math.max(1, p.startRow - n);
+  return `${p.startCol}${newStart}:${p.endCol}${p.endRow}`;
+}
+
+// ── Fetch live data from Google Sheet and render into both #ssTable and #ssTableDrop ──
+async function fetchAndRenderGSheet() {
+  const statusEl     = document.getElementById('ssGSheetStatus');
+  const statusElDrop = document.getElementById('ssGSheetStatusDrop');
+  const table        = document.getElementById('ssTable');
+  const tableDrop    = document.getElementById('ssTableDrop');
+
+  const sheetUrl   = appSettings.sheetUrl   || '';
+  const sheetName  = appSettings.sheetName  || 'Rake and Road Despatch';
+  const sheetRange = appSettings.sheetRange || 'I6:O28';
+
+  const showStatus = (html) => {
+    [statusEl, statusElDrop].forEach(el => { el.style.display = ''; el.innerHTML = html; });
+    [table, tableDrop].forEach(t => t.style.display = 'none');
+  };
+
+  if (!sheetUrl) {
+    showStatus('⚠ Google Sheet URL not configured. Open ⚙ Settings to add it.');
+    return;
+  }
+
+  const { id } = parseSheetUrl(sheetUrl);
+  if (!id) {
+    showStatus('⚠ Could not parse Sheet ID from URL. Check Settings.');
+    return;
+  }
+
+  // Auto-expand the fetch range 1 row above the user's range to capture the date row.
+  // The renderer uses the original start row to separate caption rows from data.
+  const fetchRange   = expandRangeUp(sheetRange, 1);
+  const parsedRange  = parseRange(sheetRange);
+  const dataStartRow = parsedRange ? parsedRange.startRow : null;
+
+  // Show spinner
+  showStatus('<span class="gs-spinner"></span>Fetching from Google Sheet…');
+
+  const encodedSheet = encodeURIComponent(sheetName);
+  const encodedRange = encodeURIComponent(fetchRange);
+  const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodedSheet}&range=${encodedRange}`;
+
+  try {
+    const res  = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const json = JSON.parse(text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
+    const dt   = json.table;
+    if (!dt || !dt.rows || !dt.rows.length) {
+      showStatus('⚠ No data returned for range ' + sheetRange + '.');
+      return;
+    }
+    renderGSheetTable(dt, table,     dataStartRow, fetchRange);
+    renderGSheetTable(dt, tableDrop, dataStartRow, fetchRange);
+    [statusEl, statusElDrop].forEach(el => el.style.display = 'none');
+    [table, tableDrop].forEach(t => t.style.display = '');
+  } catch(e) {
+    const msg = '⚠ Could not fetch sheet: ' + e.message +
+      '. Make sure the sheet is set to <strong>Anyone with the link can view</strong>.';
+    [statusEl, statusElDrop].forEach(el => { el.style.display = ''; el.innerHTML = msg; });
+  }
+}
+
+// ── Format a gviz cell for display — prefer the sheet's own formatted string ──
+function fmtGvizCell(cell) {
+  if (!cell) return '';
+  if (cell.f !== undefined && cell.f !== null && cell.f !== '') return String(cell.f);
+  const val = cell.v;
+  if (val === null || val === undefined || val === '') return '';
+  if (typeof val === 'string') {
+    const dm = val.match(/^Date\((\d+),(\d+),(\d+)\)$/);
+    if (dm) {
+      const d = new Date(+dm[1], +dm[2], +dm[3]);
+      return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'2-digit' });
+    }
+    return val;
+  }
+  if (typeof val === 'number') {
+    return Number.isInteger(val)
+      ? val.toLocaleString('en-IN')
+      : val.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+  }
+  return String(val);
+}
+
+// Tracks which col indices are empty (populated after each fetch)
+let gsEmptyColIndices  = new Set();
+let gsLastDt           = null;
+let gsLastDataStartRow = null;
+let gsLastFetchRange   = null;
+let gsSheetDate        = null;
+let gsCurrentCF        = null; // tracks current CF section for accent colours
+
+function renderGSheetTable(dt, table, dataStartRow, fetchRange) {
+  table.innerHTML = '';
+  gsLastDt         = dt;
+  gsLastDataStartRow = dataStartRow;
+  gsLastFetchRange   = fetchRange;
+
+  const rows = dt.rows || [];
+
+  // ── Split rows into caption, header, data ──
+  // If dataStartRow is provided, we know exactly how many prefix rows were added
+  // by expandRangeUp — those are caption rows (title/date).
+  // The fetched range starts at (dataStartRow - 3) or row 1, whichever is larger.
+  // So prefix count = dataStartRow - actual fetch start row.
+  let prefixCount = 0;
+  if (dataStartRow && fetchRange) {
+    const fp = parseRange(fetchRange);
+    if (fp) prefixCount = dataStartRow - fp.startRow; // e.g. I3:O28 fetched for I6:O28 → 3 prefix rows
+  }
+
+  // Caption rows = the prefix rows fetched above the user's range
+  const captionRows = rows.slice(0, prefixCount);
+  // Remaining rows start at the user's range start — first is the MINE header row
+  const userRows    = rows.slice(prefixCount);
+
+  // Find MINE header within first few userRows
+  let headerIdx = -1;
+  for (let i = 0; i < Math.min(userRows.length, 3); i++) {
+    const cells = userRows[i].c || [];
+    const first = cells[0];
+    const txt   = first ? String(first.f || first.v || '') : '';
+    if (/mine/i.test(txt)) { headerIdx = i; break; }
+  }
+
+  const headerCells = headerIdx >= 0 ? (userRows[headerIdx].c || []) : [];
+  const dataRows    = headerIdx >= 0 ? userRows.slice(headerIdx + 1) : userRows;
+  // Compute numCols from the maximum cell count across data rows (merged header cells can be shorter)
+  const numCols     = Math.max(
+    headerCells.length,
+    ...dataRows.map(r => (r.c || []).length)
+  );
+
+  // Known column headers — fallback when sheet cells are merged/null
+  // Maps to columns I, J, K, L, M, N, O (7 columns)
+  const KNOWN_HEADERS = ['MINE', 'RDO Balance (LT)', 'Target (T)', 'till 11:00 AM (T)', 'till 1:30 PM (T)', 'till 5:30 PM (T)', 'Remarks'];
+
+  // ── Determine which columns are empty (ignoring Highest rows) ──
+  const remarkColIdx = numCols - 1;
+  gsEmptyColIndices = new Set();
+  for (let ci = 0; ci < numCols; ci++) {
+    if (ci === 0 || ci === remarkColIdx) continue;
+    const hasData = dataRows.some(row => {
+      const rowCells  = row.c || [];
+      const firstVal  = fmtGvizCell(rowCells[0]);
+      const secondVal = fmtGvizCell(rowCells[1]);
+      // Skip Highest rows — they fill future-time columns that are otherwise empty
+      const secondVal2 = rowCells[2] ? rowCells[2].v : null;
+      const isHighestRow = !firstVal && !secondVal && typeof secondVal2 === 'number';
+      if (isHighestRow) return false;
+      const cell = rowCells[ci];
+      return cell && cell.v !== null && cell.v !== undefined && cell.v !== '';
+    });
+    if (!hasData) gsEmptyColIndices.add(ci);
+  }
+
+  // Drop screen toolbar always visible when sheet is on
+  const dropWrap = document.getElementById('hideEmptyWrapDrop');
+  if (dropWrap) { dropWrap.style.display = 'flex'; }
+
+  // ── Caption (title · date) ──
+  if (captionRows.length > 0) {
+    const cap = document.createElement('caption');
+    cap.style.cssText = 'caption-side:top;text-align:center;padding:6px 10px 2px;font-size:11px;color:var(--dim);font-family:var(--mono);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:';
+    const parts = [];
+    for (const row of captionRows) {
+      for (const cell of (row.c || [])) {
+        const txt = fmtGvizCell(cell);
+        if (txt) parts.push(txt);
+      }
+    }
+    cap.textContent = parts.join('  ·  ');
+    table.appendChild(cap);
+    // Extract the date part from caption (looks like "25-Apr-26")
+    const datePart = parts.find(p => /\d{1,2}-[A-Za-z]+-\d{2,4}/.test(p));
+    if (datePart) gsSheetDate = datePart;
+  }
+
+  // ── Apply column visibility ──
+  const hideEmpty = gsHideEmpty;
+  const visibleCols = [];
+  for (let ci = 0; ci < numCols; ci++) {
+    if (hideEmpty && gsEmptyColIndices.has(ci)) continue;
+    visibleCols.push(ci);
+  }
+
+  // Column type class helper
+  // ── Header ──
+  if (numCols > 0) {
+    const thead = document.createElement('thead');
+    const htr   = document.createElement('tr');
+    visibleCols.forEach(ci => {
+      const th   = document.createElement('th');
+      const cell = headerCells[ci];
+      const col  = (dt.cols || [])[ci] || {};
+      const txt  = fmtGvizCell(cell) || col.label || KNOWN_HEADERS[ci] || col.id || '';
+      th.textContent = txt;
+      if (ci !== 0 && ci !== remarkColIdx) th.style.textAlign = 'right';
+      htr.appendChild(th);
+    });
+    thead.appendChild(htr);
+    table.appendChild(thead);
+  }
+
+  // ── Body ──
+  const tbody = document.createElement('tbody');
+  dataRows.forEach((row, rowIdx) => {
+    const cells = row.c || [];
+    if (cells.length === 0 || cells.every(c => !c || (c.v === null && c.v !== 0 && !c.f))) return;
+
+    const firstTxt   = fmtGvizCell(cells[0]);
+    const secondTxt  = fmtGvizCell(cells[1]);
+    const firstEmpty = !firstTxt;
+
+    const isHighest = firstEmpty && !secondTxt && cells.length > 2 &&
+      cells[2] && typeof cells[2].v === 'number';
+    const isMCL  = !firstEmpty && /^mcl$/i.test(firstTxt.trim());
+    const isBold = !firstEmpty && /ibcf|tcf|mcl/i.test(firstTxt);
+
+    const tr = document.createElement('tr');
+    if (isHighest)          tr.className = 'gs-highest';
+    else if (isMCL)         tr.className = 'gs-bold gs-mcl';
+    else if (isBold)        tr.className = 'gs-bold';
+
+    // Last non-Remarks numeric col for MCL qty highlight
+    const lastNumPos = visibleCols.length - 2;
+
+    visibleCols.forEach((ci, pos) => {
+      const td  = document.createElement('td');
+      let txt   = fmtGvizCell(cells[ci]);
+      if (isHighest && pos === 0) txt = 'Highest';
+      if (isHighest && pos === 1) txt = '';
+      td.textContent = txt;
+      if (ci === remarkColIdx) {
+        // Remarks: left-aligned, condensed font, tight padding, wrapping
+        td.style.cssText = 'text-align:left;font-size:12px;white-space:normal;padding:5px 6px;font-family:"IBM Plex Sans Condensed","IBM Plex Sans",sans-serif;line-height:1.25;vertical-align:middle;';
+      } else {
+        if (pos > 0) td.style.textAlign = 'right';
+        if (!txt && !isHighest) td.style.color = 'var(--edge)';
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  // Strip any inline background/color that gviz cell styles may have injected
+  table.querySelectorAll('td, th').forEach(el => {
+    el.style.removeProperty('background');
+    el.style.removeProperty('background-color');
+    el.style.removeProperty('color');
+  });
+}
+
+function applyGSheetToAllTables() {
+  if (!gsLastDt) return;
+  const t1 = document.getElementById('ssTable');
+  const t2 = document.getElementById('ssTableDrop');
+  if (t1) renderGSheetTable(gsLastDt, t1, gsLastDataStartRow, gsLastFetchRange);
+  if (t2) renderGSheetTable(gsLastDt, t2, gsLastDataStartRow, gsLastFetchRange);
 }
 
 function toggleAreaView() {
@@ -2594,6 +3137,7 @@ function toggleTrips() {
   document.getElementById('ssTable').classList.toggle('hide-trips', !tripsVisible);
   document.getElementById('tripsSwitchTrack').classList.toggle('on', tripsVisible);
 }
+
 
 // ═══════════════════════════════════════════════════════
 //  CLOCK PICKER
@@ -2711,12 +3255,14 @@ function addDot(face, x, y) {
 }
 
 const face = document.getElementById('clockFace');
+if (face) {
 face.addEventListener('mousedown',  e => { clockDragging = true; handleClockInput(e); });
 face.addEventListener('touchstart', e => { clockDragging = true; handleClockInput(e); e.preventDefault(); }, { passive: false });
 document.addEventListener('mousemove',  e => { if (clockDragging) handleClockInput(e); });
 document.addEventListener('touchmove',  e => { if (clockDragging) { handleClockInput(e); e.preventDefault(); } }, { passive: false });
 document.addEventListener('mouseup',    () => { if (clockDragging) { clockDragging = false; if (clockMode === 'hour') { clockMode = 'minute'; renderClock(); } } });
 document.addEventListener('touchend',   () => { if (clockDragging) { clockDragging = false; if (clockMode === 'hour') { clockMode = 'minute'; renderClock(); } } });
+} // end if (face)
 
 function handleClockInput(e) {
   const angle = angleFromEvent(e, face);
@@ -2802,11 +3348,19 @@ async function shareReport() {
 
   const isDark = document.body.classList.contains('dark');
   const C = isDark ? {
-    bg:'#0e1117',surface:'#161b24',raise:'#1c2333',edge:'#253047',line:'#2e3d56',
-    amber:'#f0a500',green:'#2fc97e',blue:'#4a9eff',dim:'#5a7299',mid:'#8ba3c2',text:'#dde6f4',red:'#e05454',
+    bg:'#1c1c1a', surface:'#1c1c1a', raise:'#1e2820', edge:'#2c2c28', line:'#484440',
+    amber:'#f0a500', green:'#2fc97e', blue:'#7090c0', dim:'#686460', mid:'#7aaa80', text:'#ddd8d0', red:'#e05454',
+    headerBg:'#1e2820', headerText:'#7aaa80', divider:'#2c2c28', dividerH:'#484440',
+    cfBg:'#2c1e1e', cfText:'#c08080', mclBg:'#2c2610', mclText:'#c0a840',
+    highBg:'#1a1e2c', highTxt:'#7090c0',
+    colBalance:'#1e1c30', colTarget:'#162018',
   } : {
-    bg:'#f0f2f5',surface:'#ffffff',raise:'#f7f8fa',edge:'#dde3ec',line:'#c8d2e0',
-    amber:'#d4860a',green:'#1a9e5c',blue:'#1a6fc4',dim:'#7a8fa8',mid:'#4a6080',text:'#1a2436',red:'#c0392b',
+    bg:'#f8f8f5', surface:'#ffffff', raise:'#fafaf8', edge:'#e4e2dc', line:'#c8c4b8',
+    amber:'#d4860a', green:'#1a9e5c', blue:'#3a5080', dim:'#a0a0a0', mid:'#3a5240', text:'#111111', red:'#c0392b',
+    headerBg:'#eef2eb', headerText:'#1a3220', divider:'#e4e2dc', dividerH:'#c8c4b8',
+    cfBg:'#fdf0f0', cfText:'#5a1a1a', mclBg:'#fdf6e4', mclText:'#4a3800',
+    highBg:'#f0f5ff', highTxt:'#1a3060',
+    colBalance:'#f4f2ff', colTarget:'#f0faf4',
   };
 
   const shownTime  = document.getElementById('asofBarTime').textContent;
@@ -2814,42 +3368,88 @@ async function shareReport() {
   const reportDate = document.getElementById('metaPeriod').textContent.trim();
   const dateLabel  = (!isMultiDay && reportDate !== shownDate) ? reportDate : '';
 
-  const snap = document.createElement('div');
-  snap.style.cssText = `position:fixed;left:-9999px;top:0;width:520px;background:${C.bg};padding:20px;font-family:IBM Plex Sans,sans-serif;color:${C.text};`;
+  // When Sheet view ON, use the sheet's own date (not the XLS file date)
+  const rawSheetDate = (ssViewOn && gsSheetDate) ? gsSheetDate : shownDate;
 
-  // Title
-  const titleDiv = document.createElement('div');
-  titleDiv.style.cssText = `margin-bottom:18px;padding-bottom:16px;border-bottom:2px solid ${C.edge};`;
-  titleDiv.innerHTML = `
-    ${dateLabel ? `<div style="font-family:IBM Plex Mono,monospace;font-size:14px;color:${C.dim};letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;">${dateLabel}</div>` : ''}
-    <div style="font-family:IBM Plex Mono,monospace;font-size:24px;font-weight:600;color:${C.dim};letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">MCL Road Despatch as of</div>
-    <div style="font-family:IBM Plex Mono,monospace;font-size:34px;font-weight:700;color:${C.amber};letter-spacing:1px;line-height:1.05;margin-bottom:4px;">${shownTime}</div>
-    <div style="font-family:IBM Plex Mono,monospace;font-size:24px;font-weight:400;color:${C.mid};letter-spacing:.5px;">${shownDate}</div>
-  `;
-  snap.appendChild(titleDiv);
+  // Reformat "25-Apr-26" → "25-Apr-2026"
+  function fmtShareDate(d) {
+    const m = d.match(/^(\d{1,2})-([A-Za-z]+)-(\d{2,4})$/);
+    if (!m) return d;
+    const year = m[3].length === 2 ? '20' + m[3] : m[3];
+    return m[1].padStart(2,'0') + '-' + m[2] + '-' + year;
+  }
+  const displayDate = fmtShareDate(rawSheetDate);
+
+  // Dynamic width: 140px mine col + 115px per other col, min 480
+  const visColCount = gsEmptyColIndices.size > 0 && gsHideEmpty ? (7 - gsEmptyColIndices.size) : 7;
+  const snapWidth = ssViewOn ? Math.max(480, 140 + (visColCount - 1) * 115) : 520;
+
+  const snap = document.createElement('div');
+  snap.style.cssText = `position:fixed;left:-9999px;top:0;width:${snapWidth}px;background:${C.bg};padding:16px;font-family:IBM Plex Sans,sans-serif;color:${C.text};`;
 
   const sc = (el, extra) => Object.assign(el.style, extra);
 
   // Clone whichever table is currently active
   if (ssViewOn) {
-    // ── Spreadsheet table ──────────────────────────────
+    // ── GSheet live table ──────────────────────────────
     const tbl = document.getElementById('ssTable').cloneNode(true);
-    tbl.style.cssText = `width:auto;min-width:100%;border-collapse:collapse;font-family:IBM Plex Mono,monospace;font-size:26px;background:${C.surface};border:1px solid ${C.edge};table-layout:auto;`;
-    if (!tripsVisible) tbl.querySelectorAll('.ss-col-trips').forEach(el => { el.style.display = 'none'; });
-    tbl.querySelectorAll('th').forEach(th => {
-      sc(th, {fontSize:'15px',textTransform:'uppercase',letterSpacing:'.5px',color:C.dim,fontFamily:'IBM Plex Sans,sans-serif',fontWeight:'600',padding:'10px 16px',textAlign:'left',borderBottom:`2px solid ${C.edge}`,background:C.raise,whiteSpace:'nowrap'});
-      if (th.classList.contains('ss-col-qty') || th.classList.contains('ss-col-trips')) th.style.textAlign = 'right';
+    tbl.style.cssText = `width:100%;border-collapse:collapse;font-family:IBM Plex Mono,monospace;font-size:16px;background:${C.surface};border-radius:6px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1);`;
+    tbl.querySelectorAll('caption').forEach(cap => cap.remove());
+    const colCount = tbl.querySelector('tr') ? tbl.querySelector('tr').children.length : 7;
+    // Title row
+    const titleThead = document.createElement('thead');
+    const titleTr    = document.createElement('tr');
+    const titleTd    = document.createElement('td');
+    titleTd.setAttribute('colspan', colCount);
+    titleTd.style.cssText = `padding:12px 16px;background:${C.headerBg};border-bottom:2px solid ${C.dividerH};border-top:1px solid ${C.divider};border-left:1px solid ${C.divider};border-right:1px solid ${C.divider};text-align:center;`;
+    titleTd.innerHTML =
+      `<div style="text-align:center;width:100%;">` +
+      `<span style="font-family:IBM Plex Mono,monospace;font-size:17px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:${C.headerText};">Road Despatch dated&nbsp;&nbsp;</span>` +
+      `<span style="font-family:IBM Plex Mono,monospace;font-size:18px;font-weight:700;color:${C.text};letter-spacing:.5px;">${displayDate}</span>` +
+      `</div>`;
+    titleTr.appendChild(titleTd); titleThead.appendChild(titleTr);
+    tbl.insertBefore(titleThead, tbl.firstChild);
+    // Header
+    tbl.querySelectorAll('th').forEach((th, i) => {
+      sc(th, {fontSize:'14px',textTransform:'uppercase',letterSpacing:'.06em',color:C.headerText,fontFamily:'IBM Plex Sans,sans-serif',fontWeight:'700',
+        padding:'10px 14px',borderTop:`2px solid ${C.dividerH}`,borderBottom:`2px solid ${C.dividerH}`,
+        borderRight:`1px solid ${C.divider}`,background:C.headerBg,whiteSpace:'normal',wordBreak:'break-word',
+        textAlign:'center',verticalAlign:'middle',position:'static',maxWidth:'100px',lineHeight:'1.3'});
+      if (i===0){th.style.textAlign='left';th.style.whiteSpace='nowrap';th.style.borderRight=`2px solid ${C.dividerH}`;}
+      if (i===th.parentElement.children.length-1) th.style.borderRight='none';
     });
-    tbl.querySelectorAll('td').forEach(td => {
-      sc(td, {padding:'11px 16px',borderBottom:`1px solid ${C.edge}`,color:C.text,whiteSpace:'nowrap'});
-      if (td.classList.contains('ss-col-qty'))   { td.style.textAlign='right'; td.style.paddingLeft='8px'; }
-      if (td.classList.contains('ss-col-trips')) { td.style.textAlign='right'; td.style.color=C.dim; td.style.fontSize='18px'; td.style.paddingLeft='8px'; }
+    // Body rows with zebra + row-type styling
+    let snapRow=0;
+    tbl.querySelectorAll('tbody tr').forEach(tr => {
+      snapRow++;
+      const isBoldRow=tr.classList.contains('gs-bold');
+      const isMclRow=tr.classList.contains('gs-mcl');
+      const isHighestRow=tr.classList.contains('gs-highest');
+      const zebraBg = snapRow%2===0?(isDark?'#1a2424':'#f5f9f9'):C.surface;
+      const rowBg = isMclRow?C.mclBg:isBoldRow?C.cfBg:isHighestRow?C.highBg:zebraBg;
+      tr.querySelectorAll('td').forEach((td,i) => {
+        sc(td,{padding:'9px 14px',borderBottom:`1px solid ${C.divider}`,borderRight:`1px solid ${C.divider}`,
+          color:C.text,whiteSpace:'nowrap',textAlign:'right',verticalAlign:'middle',
+          fontFamily:'IBM Plex Mono,monospace',fontSize:'18px',fontVariantNumeric:'tabular-nums',background:rowBg});
+        const ci=Array.from(td.parentElement.children).indexOf(td);
+        // Column tints — RDO Balance (col 2) and Target (col 3)
+        if (!isBoldRow && !isMclRow && !isHighestRow) {
+          if(ci===1) td.style.background = C.colBalance;
+          if(ci===2) td.style.background = C.colTarget;
+        }
+        if(ci===0){
+          td.style.textAlign='left';td.style.fontFamily='IBM Plex Sans,sans-serif';
+          td.style.borderRight=`2px solid ${C.dividerH}`;
+          td.style.fontWeight=isMclRow?'800':isBoldRow?'700':'500';
+          if(isBoldRow&&!isMclRow){td.style.color=C.cfText;td.style.textTransform='uppercase';td.style.letterSpacing='.03em';} if(isMclRow){td.style.color=C.mclText;td.style.textTransform='uppercase';td.style.letterSpacing='.03em';}
+          if(isHighestRow){td.style.color=C.dim;td.style.fontSize='14px';td.style.textTransform='uppercase';td.style.letterSpacing='.08em';td.style.fontFamily='IBM Plex Sans,sans-serif';td.style.paddingLeft='22px';}
+        }
+        if(td===td.parentElement.children[td.parentElement.children.length-1]) { td.style.borderRight='none'; td.style.whiteSpace='normal'; td.style.fontSize='12px'; td.style.minWidth='90px'; td.style.verticalAlign='top'; td.style.fontFamily="'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif"; td.style.lineHeight='1.3'; }
+        if(isBoldRow||isMclRow){td.style.fontWeight=isMclRow?'800':'700';td.style.fontSize=isMclRow?'21px':'20px';td.style.borderTop=`2px solid ${C.dividerH}`;}
+        if(isHighestRow){td.style.color=C.highTxt;td.style.fontSize='17px';}
+      });
     });
-    tbl.querySelectorAll('tr.ss-cf-total td').forEach(td => sc(td, {background:C.raise,color:C.amber,fontWeight:'700',fontSize:'28px',borderTop:`1px solid ${C.line}`,borderBottom:`2px solid ${C.edge}`,padding:'12px 16px'}));
-    tbl.querySelectorAll('tr.ss-mcl-total td').forEach(td => sc(td, {background:C.edge,color:C.text,fontWeight:'700',fontSize:'30px',borderTop:`2px solid ${C.line}`,padding:'15px 16px'}));
-    tbl.querySelectorAll('tr.ss-mcl-total td.ss-col-qty').forEach(td => { td.style.color = C.green; td.style.fontSize = '34px'; });
-    tbl.querySelectorAll('tr.ss-zero td').forEach(td => { td.style.color = C.dim; });
-    tbl.querySelectorAll('tr:last-child td').forEach(td => { td.style.borderBottom = 'none'; });
+    tbl.querySelectorAll('tr:last-child td').forEach(td=>{td.style.borderBottom='none';});
     snap.appendChild(tbl);
 
   } else {
@@ -2857,6 +3457,21 @@ async function shareReport() {
     const tbl = document.getElementById('areaTable').cloneNode(true);
     if (!tripsVisible) tbl.classList.add('hide-trips');
     else tbl.classList.remove('hide-trips');
+
+    // Inject title as a spanning row (html2canvas skips <caption>)
+    const areaColCount = tbl.querySelector('tr') ? tbl.querySelector('tr').children.length : 3;
+    const areaTitleThead = document.createElement('thead');
+    const areaTitleTr    = document.createElement('tr');
+    const areaTitleTd    = document.createElement('td');
+    areaTitleTd.setAttribute('colspan', areaColCount);
+    areaTitleTd.style.cssText = `padding:14px 14px;background:${C.raise};border-bottom:2px solid ${C.line};border-top:1px solid ${C.edge};border-left:1px solid ${C.edge};border-right:1px solid ${C.edge};text-align:center;`;
+    areaTitleTd.innerHTML =
+      `<span style="font-family:IBM Plex Mono,monospace;font-size:16px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:${C.dim};">MCL Road Despatch&nbsp;&nbsp;</span>` +
+      `<span style="font-family:IBM Plex Mono,monospace;font-size:23px;font-weight:700;color:${C.text};letter-spacing:.5px;">${shownTime}</span>` +
+      `<span style="font-family:IBM Plex Mono,monospace;font-size:16px;font-weight:400;color:${C.mid};margin-left:12px;">${displayDate}</span>`;
+    areaTitleTr.appendChild(areaTitleTd);
+    areaTitleThead.appendChild(areaTitleTr);
+    tbl.insertBefore(areaTitleThead, tbl.firstChild);
 
     const bodyFs   = tripsVisible ? '16px' : '20px';
     const totalFs  = tripsVisible ? '16px' : '20px';
@@ -3035,7 +3650,10 @@ async function pushToSheet() {
   try {
     // Top-level navigation in hidden iframe — treated same as address bar by Android
     await new Promise((resolve) => {
-      const pushData = JSON.stringify({ timeslot, col, rows: pushRows });
+      const pushData = JSON.stringify({
+      timeslot, col, rows: pushRows,
+      sheetName: appSettings.sheetName || 'Rake and Road Despatch',
+    });
       const url = scriptUrl + '?data=' + encodeURIComponent(pushData);
 
       // Remove any existing push iframe
@@ -3060,7 +3678,10 @@ async function pushToSheet() {
 
     btn.innerHTML = '✓ Done';
     btn.style.color = '#0f9d58';
-    setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; btn.style.opacity = ''; }, 2500);
+    setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; btn.style.opacity = ''; btn.style.color = ''; }, 2500);
+
+    // Auto-refresh Sheet view if it's ON — give the sheet 2s to process the push
+    if (ssViewOn) setTimeout(() => fetchAndRenderGSheet(), 2000);
 
     // Show sheet link — tap opens it (avoids Android popup blocker)
     if (appSettings.sheetUrl) {
@@ -3095,22 +3716,82 @@ async function exportXls() {
   btn.innerHTML = '⏳'; btn.disabled = true;
 
   try {
+    // If sheet view is ON but data hasn't been fetched yet, fetch it first
+    if (ssViewOn && !gsLastDt) {
+      await fetchAndRenderGSheet();
+    }
     const shownTime  = document.getElementById('asofBarTime').textContent;
     const shownDate  = document.getElementById('asofBarDate').textContent;
     const reportDate = document.getElementById('metaPeriod').textContent.trim();
     const withTrips  = tripsVisible;
+    const rawDate    = (ssViewOn && gsSheetDate) ? gsSheetDate : shownDate;
+    function fmtExportDate(d) {
+      const m = d.match(/^(\d{1,2})-([A-Za-z]+)-(\d{2,4})$/);
+      if (!m) return d;
+      return m[1].padStart(2,'0') + '-' + m[2] + '-' + (m[3].length===2?'20'+m[3]:m[3]);
+    }
+    const displayDate = fmtExportDate(rawDate);
 
     // ── Collect rows ────────────────────────────────────
     const dataRows = [];
-    if (ssViewOn) {
-      for (const tr of document.getElementById('ssTableBody').rows) {
+
+    if (ssViewOn && gsLastDt) {
+      // ── Export live Google Sheet data ──────────────────
+      const sheetRows  = gsLastDt.rows || [];
+      const parsedR    = parseRange(appSettings.sheetRange || 'I6:O28');
+      const fetchR     = parseRange(gsLastFetchRange || appSettings.sheetRange || 'I6:O28');
+      const prefixCount = (parsedR && fetchR) ? parsedR.startRow - fetchR.startRow : 0;
+      const userRows   = sheetRows.slice(prefixCount);
+
+      let headerIdx = -1;
+      for (let i = 0; i < Math.min(userRows.length, 3); i++) {
+        const c = userRows[i].c || [];
+        const t = c[0] ? String(c[0].f || c[0].v || '') : '';
+        if (/mine/i.test(t)) { headerIdx = i; break; }
+      }
+      const headerCells = headerIdx >= 0 ? (userRows[headerIdx].c || []) : [];
+      const bodyRows    = headerIdx >= 0 ? userRows.slice(headerIdx + 1) : userRows;
+
+      // Determine visible col indices (same as render)
+      const numCols   = Math.max(headerCells.length, ...bodyRows.map(r => (r.c || []).length));
+      const remIdx    = numCols - 1;
+      const visColIdx = [];
+      for (let ci = 0; ci < numCols; ci++) {
+        if (gsHideEmpty && gsEmptyColIndices.has(ci)) continue;
+        visColIdx.push(ci);
+      }
+
+      // Headers
+      const headers = visColIdx.map(ci => {
+        const col  = (gsLastDt.cols || [])[ci] || {};
+        return fmtGvizCell(headerCells[ci]) || col.label || KNOWN_HEADERS[ci] || col.id || '';
+      });
+
+      dataRows.push({ type: 'header', headers });
+
+      for (const row of bodyRows) {
+        const cells = row.c || [];
+        if (cells.every(c => !c || (c.v === null && !c.f))) continue;
+
+        const firstTxt  = fmtGvizCell(cells[0]);
+        const secondTxt = fmtGvizCell(cells[1]);
+        const firstEmpty = !firstTxt;
+
+        const isHighest = firstEmpty && !secondTxt && cells.length > 2 &&
+          cells[2] && typeof cells[2].v === 'number';
+        const isMCL  = !firstEmpty && /^mcl$/i.test(firstTxt.trim());
+        const isBold = !firstEmpty && /ibcf|tcf|mcl/i.test(firstTxt);
+
+        const values = visColIdx.map((ci, pos) => {
+          let txt = fmtGvizCell(cells[ci]);
+          if (isHighest && pos === 0) txt = 'Highest';
+          if (isHighest && pos === 1) txt = '';
+          return txt;
+        });
+
         dataRows.push({
-          label: tr.cells[0].textContent.trim(),
-          trips: parseInt(tr.cells[1].textContent.replace(/,/g,'')) || 0,
-          qty:   parseFloat(tr.cells[2].textContent.replace(/,/g,'')) || 0,
-          type:  tr.classList.contains('ss-mcl-total') ? 'mcl'
-               : tr.classList.contains('ss-cf-total')  ? 'cf' : 'data',
-          isZero: tr.classList.contains('ss-zero'),
+          type: isHighest ? 'highest' : isMCL ? 'mcl' : isBold ? 'cf' : 'data',
+          values,
         });
       }
     } else {
@@ -3127,7 +3808,121 @@ async function exportXls() {
       }
     }
 
-    // ── Helpers ──────────────────────────────────────────
+    // ── Build XLS ────────────────────────────────────────
+    if (ssViewOn && gsLastDt) {
+      // ── Simple flat table from Google Sheet data ──────
+      const headerRow = dataRows.find(r => r.type === 'header');
+      const headers   = headerRow ? headerRow.headers : [];
+      const bodyData  = dataRows.filter(r => r.type !== 'header');
+      const numCols   = headers.length;
+
+      const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const ss  = [];
+      const si  = s => { let i = ss.indexOf(s); if (i < 0) { i = ss.length; ss.push(s); } return i; };
+      const col = c => c < 26 ? String.fromCharCode(65 + c) : 'A' + String.fromCharCode(65 + c - 26);
+      const addr = (r, c) => col(c) + r;
+      const sC = (rc, i, s) => `<c r="${rc}" t="s" s="${s}"><v>${i}</v></c>`;
+      const nC = (rc, v, s) => `<c r="${rc}" s="${s}"><v>${v}</v></c>`;
+      const eC = (rc, s)    => `<c r="${rc}" s="${s}"/>`;
+      const mkRow = (rn, ht, cells) => `<row r="${rn}" ht="${ht}" customHeight="1">${cells}</row>`;
+
+      // Style defs: 0=default, 1=title, 2=header, 3=bold/cf, 4=mcl, 5=highest, 6=data
+      const stylesXml = `<?xml version="1.0" encoding="UTF-8"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <fonts count="5">
+    <font><sz val="11"/><name val="IBM Plex Mono"/></font>
+    <font><b/><sz val="13"/><name val="IBM Plex Sans"/></font>
+    <font><b/><sz val="11"/><name val="IBM Plex Sans"/></font>
+    <font><b/><sz val="12"/><name val="IBM Plex Sans"/></font>
+    <font><sz val="10"/><color rgb="FF777777"/><name val="IBM Plex Mono"/></font>
+  </fonts>
+  <fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFECF4F4"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFD6EBEB"/></patternFill></fill>
+  </fills>
+  <borders count="2">
+    <border><left/><right/><top/><bottom/><diagonal/></border>
+    <border><left style="thin"><color rgb="FFCCCCCC"/></left><right style="thin"><color rgb="FFCCCCCC"/></right><top style="thin"><color rgb="FFCCCCCC"/></top><bottom style="thin"><color rgb="FFCCCCCC"/></bottom><diagonal/></border>
+  </borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs count="7">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0"><alignment horizontal="left"/></xf>
+    <xf numFmtId="0" fontId="1" fillId="0" borderId="1" xfId="0"><alignment horizontal="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0"><alignment horizontal="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0"><alignment horizontal="right"/></xf>
+    <xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0"><alignment horizontal="left"/></xf>
+    <xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0"><alignment horizontal="right"/></xf>
+    <xf numFmtId="0" fontId="4" fillId="0" borderId="1" xfId="0"><alignment horizontal="right"/></xf>
+  </cellXfs>
+</styleSheet>`;
+
+      // Title row
+      const titleSI = si(`Road Despatch dated ${displayDate || shownDate}`);
+      let xml = mkRow(1, 22, sC(addr(1,0), titleSI, 1) +
+        Array.from({length: numCols-1}, (_,i) => eC(addr(1,i+1), 1)).join('')) ;
+      // Header row
+      xml += mkRow(2, 20, headers.map((h,i) =>
+        sC(addr(2,i), si(h), i===0 ? 2 : 3)).join(''));
+
+      let r = 3;
+      for (const dr of bodyData) {
+        const isHighest = dr.type === 'highest';
+        const isCF      = dr.type === 'cf' || dr.type === 'mcl';
+        const ht        = dr.type === 'mcl' ? 22 : isCF ? 19 : isHighest ? 15 : 17;
+        const lStyle    = dr.type === 'mcl' ? 4 : isCF ? 4 : isHighest ? 6 : 0;
+        const rStyle    = dr.type === 'mcl' ? 5 : isCF ? 5 : isHighest ? 6 : 3;
+
+        const cells = (dr.values || []).map((v, i) => {
+          const s = i === 0 ? lStyle : rStyle;
+          if (!v) return eC(addr(r, i), s);
+          const num = parseFloat(String(v).replace(/,/g,''));
+          return isNaN(num) ? sC(addr(r,i), si(v), s) : nC(addr(r,i), num, s);
+        }).join('');
+        xml += mkRow(r, ht, cells);
+        r++;
+      }
+
+      // PROVISIONAL footer
+      xml += mkRow(r, 14, sC(addr(r,0), si('PROVISIONAL'), 6));
+
+      // Col widths
+      const colDefs = headers.map((_,i) =>
+        `<col min="${i+1}" max="${i+1}" width="${i===0?20:14}" customWidth="1"/>`).join('');
+
+      const sheetXml = `<?xml version="1.0" encoding="UTF-8"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <sheetViews><sheetView workbookViewId="0"><selection activeCell="A1"/></sheetView></sheetViews>
+  <sheetFormatPr defaultRowHeight="17"/>
+  <cols>${colDefs}</cols>
+  <sheetData>${xml}</sheetData>
+  <mergeCells count="1"><mergeCell ref="A1:${col(numCols-1)}1"/></mergeCells>
+</worksheet>`;
+
+      const ssXml = `<?xml version="1.0" encoding="UTF-8"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="${ss.length}" uniqueCount="${ss.length}">${ss.map(s=>`<si><t xml:space="preserve">${esc(s)}</t></si>`).join('')}</sst>`;
+      const wbXml = `<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Road Despatch" sheetId="1" r:id="rId1"/></sheets></workbook>`;
+      const relsXml = `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+      const wbRels = `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+      const ctXml  = `<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`;
+
+      const zip = new JSZip();
+      zip.file('[Content_Types].xml', ctXml);
+      zip.file('_rels/.rels', wbRels);
+      zip.file('xl/workbook.xml', wbXml);
+      zip.file('xl/_rels/workbook.xml.rels', relsXml);
+      zip.file('xl/worksheets/sheet1.xml', sheetXml);
+      zip.file('xl/sharedStrings.xml', ssXml);
+      zip.file('xl/styles.xml', stylesXml);
+
+      const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const dateStr = (displayDate || shownDate).replace(/-/g,'');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `RoadDespatch_Sheet_${dateStr}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      btn.innerHTML = origHTML; btn.disabled = false;
+      return;
+    }
     const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const col = c => String.fromCharCode(64 + c);
     const addr = (r, c) => col(c) + r;
@@ -3353,6 +4148,7 @@ const SETTINGS_GH = {
 let appSettings = {
   sheetUrl:  '',
   sheetName: 'Rake and Road Despatch',
+  sheetRange: 'I6:O28',
   scriptUrl: SHEET_WEBAPP_URL,
   // slots: [{label, time, col, autoFrom}]
   // time: "HH:MM" 24h, col: sheet column, autoFrom: "HH:MM" when this slot auto-activates
@@ -3545,8 +4341,9 @@ async function loadSettingsFromGitHub() {
     // Merge — new schema takes priority
     if (parsed.slots) appSettings.slots = parsed.slots;
     if (parsed.mines) appSettings.mines = parsed.mines;
-    if (parsed.sheetUrl)  appSettings.sheetUrl  = parsed.sheetUrl;
-    if (parsed.sheetName) appSettings.sheetName = parsed.sheetName;
+    if (parsed.sheetUrl)   appSettings.sheetUrl   = parsed.sheetUrl;
+    if (parsed.sheetName)  appSettings.sheetName  = parsed.sheetName;
+    if (parsed.sheetRange) appSettings.sheetRange = parsed.sheetRange;
     if (parsed.scriptUrl) { appSettings.scriptUrl = parsed.scriptUrl; SHEET_WEBAPP_URL = parsed.scriptUrl; }
   } catch(e) { /* use defaults */ }
 }
@@ -3555,6 +4352,7 @@ async function loadSettingsFromGitHub() {
 function openSettings() {
   document.getElementById('cfg_sheetUrl').value   = appSettings.sheetUrl   || '';
   document.getElementById('cfg_sheetName').value  = appSettings.sheetName  || 'Rake and Road Despatch';
+  document.getElementById('cfg_sheetRange').value = appSettings.sheetRange || 'I6:O28';
   document.getElementById('cfg_scriptUrl').value  = appSettings.scriptUrl  || SHEET_WEBAPP_URL;
   renderSlotsTable();
   renderMinesTable();
@@ -3708,9 +4506,10 @@ function collectSettingsFromDOM() {
   });
 
   return {
-    sheetUrl:  document.getElementById('cfg_sheetUrl').value.trim(),
-    sheetName: document.getElementById('cfg_sheetName').value.trim() || 'Rake and Road Despatch',
-    scriptUrl: document.getElementById('cfg_scriptUrl').value.trim(),
+    sheetUrl:   document.getElementById('cfg_sheetUrl').value.trim(),
+    sheetName:  document.getElementById('cfg_sheetName').value.trim() || 'Rake and Road Despatch',
+    sheetRange: document.getElementById('cfg_sheetRange').value.trim() || 'I6:O28',
+    scriptUrl:  document.getElementById('cfg_scriptUrl').value.trim(),
     slots,
     mines,
   };
@@ -3744,6 +4543,13 @@ async function saveSettings() {
   if (dupRows.length) { status.textContent = 'Duplicate row numbers: ' + [...new Set(dupRows)].join(', '); status.style.color = '#e05'; return; }
 
   try {
+    // Always get latest SHA to avoid 409 conflicts
+    const shaRes = await fetch(
+      `${SETTINGS_GH.api}/repos/${SETTINGS_GH.owner}/${SETTINGS_GH.repo}/contents/${SETTINGS_GH.path}`,
+      { headers: { Authorization: 'token ' + SETTINGS_GH.token } }
+    );
+    if (shaRes.ok) { const d = await shaRes.json(); _settingsSha = d.sha; }
+
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(newSettings, null, 2))));
     const body = { message: 'Update settings', content, branch: SETTINGS_GH.branch };
     if (_settingsSha) body.sha = _settingsSha;
@@ -3764,7 +4570,9 @@ async function saveSettings() {
   }
 }
 
-loadSettingsFromGitHub();
+loadSettingsFromGitHub().then(() => {
+  if (ssViewOn) { applyTableVisibility(); fetchAndRenderGSheet(); }
+});
 loadDbFromGitHub();
 </script>
 
@@ -3793,9 +4601,15 @@ loadDbFromGitHub();
           <input id="cfg_sheetName" class="stt-input" type="text" placeholder="Rake and Road Despatch">
         </div>
         <div class="stt-section">
+          <label class="stt-label">Sheet View Range</label>
+          <input id="cfg_sheetRange" class="stt-input" type="text" placeholder="I6:O28" style="font-family:var(--mono);letter-spacing:.04em;">
+          <div class="stt-hint" style="margin-top:4px;">Data range (e.g. I6:O28). The app automatically fetches 3 rows above to capture the date — no need to include them manually.</div>
+        </div>
+        <div class="stt-section">
           <label class="stt-label">Apps Script Web App URL</label>
           <input id="cfg_scriptUrl" class="stt-input" type="url" placeholder="https://script.google.com/macros/s/…">
         </div>
+
 
         <!-- Time Slots -->
         <div class="stt-section">
