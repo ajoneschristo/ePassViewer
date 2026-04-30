@@ -1402,9 +1402,11 @@ body.dark {
   color: #000000;
   padding: 8px 10px;
   background: var(--gs-col-header-bg);
-  border: 1px solid #000000;
-  white-space: normal;
-  word-break: break-word;
+  border-bottom: 2px solid #000000;
+  border-top: 1px solid #000000;
+  border-right: none;
+  border-left: none;
+  white-space: nowrap;
   text-align: center !important;
   vertical-align: middle;
   line-height: 1.3;
@@ -1412,7 +1414,7 @@ body.dark {
   top: 0;
   z-index: 1;
 }
-.ss-gsheet-table th:last-child  { border-right: 1px solid #000000; }
+.ss-gsheet-table th:last-child  { border-right: none; }
 .ss-gsheet-table thead tr { background: var(--gs-col-header-bg); }
 .ss-gsheet-table th:first-child {
   text-align: left;
@@ -1425,7 +1427,7 @@ body.dark {
 .ss-gsheet-table td {
   padding: 11px 14px;
   border-bottom: 1px solid #000000;
-  border-right: 1px solid #000000;
+  border-right: none;
   white-space: nowrap;
   text-align: center;
   vertical-align: middle;
@@ -1567,7 +1569,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B87-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B88-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -3433,7 +3435,7 @@ async function shareReport() {
       sc(th, {fontSize:'13px',textTransform:'uppercase',letterSpacing:'.05em',color:'#000000',
         fontFamily:'IBM Plex Sans,sans-serif',fontWeight:'700',
         padding:'9px 12px',borderTop:'1px solid #000000',borderBottom:'2px solid #000000',
-        borderRight:'1px solid #000000',background:'#fce4d6',whiteSpace:'normal',
+        borderRight:'none',background:'#fce4d6',whiteSpace:'normal',
         wordBreak:'break-word',textAlign:'center !important',verticalAlign:'middle',
         position:'static',lineHeight:'1.3'});
       if(i===0){th.style.textAlign='left';th.style.whiteSpace='nowrap';}
@@ -3447,7 +3449,7 @@ async function shareReport() {
       const isMineB=tr.classList.contains('gs-mine-b');
       const rowBg=isMclRow?'#d9ead3':isBoldRow?'#d9ead3':isHighestRow?'#cfe2f3':'#ffffff';
       tr.querySelectorAll('td').forEach((td,ci) => {
-        sc(td,{padding:'9px 12px',borderBottom:'1px solid #000000',borderRight:'1px solid #000000',
+        sc(td,{padding:'9px 12px',borderBottom:'1px solid #000000',borderRight:'none',
           color:'#000000',whiteSpace:'nowrap',textAlign:'center',verticalAlign:'middle',
           fontFamily:'IBM Plex Sans,sans-serif',fontSize:'17px',
           fontVariantNumeric:'tabular-nums',background:rowBg});
@@ -3455,6 +3457,7 @@ async function shareReport() {
           td.style.textAlign='left';
           td.style.fontFamily='IBM Plex Sans,sans-serif';
           td.style.fontWeight='600';
+          td.style.borderRight='1px solid #000000';
           if(isBoldRow||isMclRow){
             td.style.color='#38761d';
             td.style.fontWeight='800';
