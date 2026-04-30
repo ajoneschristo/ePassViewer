@@ -1369,7 +1369,8 @@ body.dark {
 
 .ss-gsheet-table {
   border-collapse: collapse;
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   background: var(--gs-surface);
   border: 2px solid #000000;
   border-radius: 4px;
@@ -1412,7 +1413,7 @@ body.dark {
   top: 0;
   z-index: 1;
 }
-.ss-gsheet-table th:last-child  { border-right: 2px solid #000000; min-width: 80px; white-space: nowrap; }
+.ss-gsheet-table th:last-child  { border-right: 2px solid #000000; min-width: 90px; white-space: nowrap; }
 .ss-gsheet-table thead tr { background: var(--gs-col-header-bg); }
 .ss-gsheet-table th:first-child {
   text-align: left;
@@ -1568,7 +1569,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B91-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B92-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -1645,7 +1646,7 @@ body.dark {
         Share
       </button>
     </div>
-    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;">
       <table class="ss-table ss-gsheet-table" id="ssTableDrop" style="display:none;width:100%;border-collapse:collapse;"></table>
     </div>
   </div>
