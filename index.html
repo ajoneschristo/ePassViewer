@@ -1412,13 +1412,14 @@ body.dark {
   top: 0;
   z-index: 1;
 }
-.ss-gsheet-table th:last-child  { border-right: 1px solid #000000; min-width: 80px; }
+.ss-gsheet-table th:last-child  { border-right: 2px solid #000000; min-width: 80px; white-space: nowrap; }
 .ss-gsheet-table thead tr { background: var(--gs-col-header-bg); }
 .ss-gsheet-table th:first-child {
   text-align: left;
   min-width: 90px;
   white-space: nowrap;
-  border-right: 2px solid #000000;
+  border-left: 2px solid #000000;
+  border-right: 1px solid #000000;
 }
 
 /* ── Data cells — generous padding, clean ── */
@@ -1457,7 +1458,7 @@ body.dark {
   padding-left: 10px;
   letter-spacing: .01em;
 }
-.ss-gsheet-table tr:last-child td { border-bottom: none; }
+.ss-gsheet-table tr:last-child td { border-bottom: 2px solid #000000; }
 
 /* ── No zebra — rows separated by padding and thin lines ── */
 .ss-gsheet-table tbody tr:nth-child(even) td { background: var(--gs-surface); }
@@ -1567,7 +1568,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B90-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B91-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -3474,7 +3475,8 @@ async function shareReport() {
           }
         }
         if(ci===td.parentElement.children.length-1){
-          td.style.whiteSpace='normal';
+          td.style.borderRight='2px solid #000000';
+          td.style.whiteSpace='nowrap';
           td.style.fontSize='12px';
           td.style.minWidth='80px';
           td.style.fontFamily="'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif";
@@ -3492,7 +3494,7 @@ async function shareReport() {
         }
       });
     });
-    tbl.querySelectorAll('tr:last-child td').forEach(td=>{td.style.borderBottom='none';});
+    tbl.querySelectorAll('tr:last-child td').forEach(td=>{td.style.borderBottom='2px solid #000000';});
     snap.appendChild(tbl);
 
   } else {
