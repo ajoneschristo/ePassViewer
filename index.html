@@ -913,12 +913,13 @@ body {
 .provisional-mark {
   text-align: center;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 9px;
   color: var(--dim);
-  letter-spacing: 3px;
+  letter-spacing: 4px;
   text-transform: uppercase;
-  padding: 6px 0 2px;
+  padding: 8px 0 4px;
   user-select: none;
+  opacity: .55;
 }
 .multiday-tabs-wrap {
   margin-bottom: 12px;
@@ -1297,239 +1298,235 @@ body {
    GSheet table — Material Design, pastel zebra
    ══════════════════════════════════════════════════════ */
 
-/* Material palette — lighter pastels */
+/* Gemini-specified colour rules */
 :root {
-  /* Base */
-  --gs-surface:     #ffffff;
-  --gs-surface-2:   #fafaf8;    /* zebra — warm white */
-  --gs-text:        #111111;
-  --gs-text-dim:    #707070;
-  --gs-hover:       #f0f4ff;
+  --gs-surface:       #ffffff;
+  --gs-surface-2:     #ffffff;
+  --gs-text:          #000000;
+  --gs-text-dim:      #000000;
+  --gs-hover:         #e8f8f8;
 
-  /* Header — soft sage */
-  --gs-header-bg:   #eef2eb;
-  --gs-header-text: #1a3220;
+  /* Title row — cyan */
+  --gs-header-bg:     #00ffff;
+  --gs-header-text:   #000000;
 
-  /* Dividers — warm stone */
-  --gs-divider:     #e4e2dc;
-  --gs-divider-h:   #c8c4b8;
+  /* Column headers — tan/cream */
+  --gs-col-header-bg: #fce4d6;
 
-  /* CF rows — blush rose, very light */
-  --gs-cf-bg:       #fdf0f0;
-  --gs-cf-text:     #5a1a1a;
+  /* Borders — solid black */
+  --gs-divider:       #000000;
+  --gs-divider-h:     #000000;
 
-  /* MCL row — soft gold */
-  --gs-mcl-bg:      #fdf6e4;
-  --gs-mcl-text:    #4a3800;
+  /* IBCF/TCF/MCL total rows — green */
+  --gs-cf-bg:         #d9ead3;
+  --gs-cf-text:       #38761d;
+  --gs-cf-accent:     #38761d;
 
-  /* Highest rows — pale sky */
-  --gs-highest-bg:  #f0f5ff;
-  --gs-highest-txt: #1a3060;
+  /* MCL total row — same green */
+  --gs-mcl-bg:        #d9ead3;
+  --gs-mcl-text:      #38761d;
+  --gs-mcl-accent:    #38761d;
 
-  /* Column tints */
-  --gs-col-balance: #f4f2ff;   /* lavender — RDO Balance */
-  --gs-col-target:  #f0faf4;   /* mint — Target */
+  /* Highest rows — blue */
+  --gs-highest-bg:    #cfe2f3;
+  --gs-highest-txt:   #000000;
+
+  /* Mine group A (IBCF section) — pink/mauve first col */
+  --gs-mine-a-bg:     #ead1dc;
+  /* Mine group B (TCF section) — peach/beige first col */
+  --gs-mine-b-bg:     #fce5cd;
+
+  --gs-col-balance:   #ffffff;
+  --gs-col-target:    #ffffff;
 }
 body.dark {
-  --gs-surface:     #1c1c1a;
-  --gs-surface-2:   #181816;
-  --gs-text:        #ddd8d0;
-  --gs-text-dim:    #686460;
-  --gs-hover:       #1e2030;
+  --gs-surface:       #1a1a1a;
+  --gs-surface-2:     #1a1a10;
+  --gs-text:          #ffffff;
+  --gs-text-dim:      #cccccc;
+  --gs-hover:         #1a2a1a;
 
-  --gs-header-bg:   #1e2820;
-  --gs-header-text: #7aaa80;
+  --gs-header-bg:     #2d5a1b;
+  --gs-header-text:   #ffffff;
 
-  --gs-divider:     #2c2c28;
-  --gs-divider-h:   #484440;
+  --gs-divider:       #555555;
+  --gs-divider-h:     #888888;
 
-  --gs-cf-bg:       #2c1e1e;
-  --gs-cf-text:     #c08080;
+  --gs-cf-bg:         #1a2e10;
+  --gs-cf-text:       #92d050;
+  --gs-cf-accent:     #70ad47;
 
-  --gs-mcl-bg:      #2c2610;
-  --gs-mcl-text:    #c0a840;
+  --gs-mcl-bg:        #0a1e3a;
+  --gs-mcl-text:      #9dc3e6;
+  --gs-mcl-accent:    #2e75b6;
 
-  --gs-highest-bg:  #1a1e2c;
-  --gs-highest-txt: #7090c0;
+  --gs-highest-bg:    #0a1a2e;
+  --gs-highest-txt:   #9dc3e6;
 
-  --gs-col-balance: #1e1c30;   /* dark lavender odd */
-  --gs-col-balance-2: #18162a; /* dark lavender even */
-  --gs-col-target:  #162018;   /* dark mint odd */
-  --gs-col-target-2: #121a14;  /* dark mint even */
+  --gs-col-balance:   #1a1a1a;
+  --gs-col-target:    #1a1a1a;
 }
 
 .ss-gsheet-table {
-  font-size: 12.5px;
   border-collapse: collapse;
   width: 100%;
   background: var(--gs-surface);
-  border: 1px solid var(--gs-divider-h);
-  border-radius: 8px;
+  border: 2px solid #000000;
+  border-radius: 4px;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+  box-shadow: none;
 }
 
 /* Caption */
 .ss-gsheet-table caption {
   caption-side: top;
   text-align: center;
-  padding: 8px 14px 6px;
+  padding: 8px 16px 6px;
   font-size: 13px;
   font-family: var(--mono);
   letter-spacing: .08em;
   color: var(--gs-header-text);
   text-transform: uppercase;
   background: var(--gs-header-bg);
-  border-bottom: 1px solid var(--gs-divider);
+  border-bottom: 1px solid rgba(255,255,255,.15);
 }
 
-/* ── Header ── */
+/* ── Header — dark band ── */
 .ss-gsheet-table thead tr { background: var(--gs-header-bg); }
 .ss-gsheet-table th {
   font-family: var(--sans);
-  font-size: clamp(11px, 1.3vw, 13px);
-  font-weight: 700;
+  font-size: clamp(10px, 1.2vw, 12px);
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .07em;
-  color: var(--gs-header-text);
-  padding: 10px 12px;
-  border-top: 2px solid var(--gs-divider-h);
-  border-bottom: 2px solid var(--gs-divider-h);
-  border-right: 1px solid var(--gs-divider);
+  letter-spacing: .08em;
+  color: #000000;
+  padding: 8px 10px;
+  background: var(--gs-col-header-bg);
+  border: 1px solid #000000;
   white-space: normal;
   word-break: break-word;
-  text-align: center;
+  text-align: center !important;
   vertical-align: middle;
-  max-width: 80px;
   line-height: 1.3;
   position: sticky;
   top: 0;
-  background: var(--gs-header-bg);
   z-index: 1;
 }
-.ss-gsheet-table th:last-child  { border-right: none; }
+.ss-gsheet-table th:last-child  { border-right: 1px solid #000000; }
+.ss-gsheet-table thead tr { background: var(--gs-col-header-bg); }
 .ss-gsheet-table th:first-child {
   text-align: left;
   min-width: 90px;
-  max-width: 130px;
   white-space: nowrap;
-  border-right: 2px solid var(--gs-divider-h);
+  border-right: 2px solid #000000;
 }
-/* RDO Balance header tint */
-.ss-gsheet-table th:nth-child(2) { background: #eeeaf8; } /* lavender tint on RDO Balance header */
-.ss-gsheet-table th:nth-child(3) { background: #e8f5ee; } /* mint tint on Target header */
 
-/* ── Data cells ── */
+/* ── Data cells — generous padding, clean ── */
 .ss-gsheet-table td {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--gs-divider);
-  border-right: 1px solid var(--gs-divider);
+  padding: 11px 14px;
+  border-bottom: 1px solid #000000;
+  border-right: 1px solid #000000;
   white-space: nowrap;
-  text-align: right;
+  text-align: center;
   vertical-align: middle;
-  font-family: var(--mono);
-  font-size: clamp(13px, 1.7vw, 16px);
+  font-family: var(--sans);
+  font-size: clamp(13px, 1.6vw, 15px);
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
-  color: var(--gs-text);
-  transition: background .12s;
-  /* No inline background — controlled entirely by rules below */
+  color: #000000;
 }
-.ss-gsheet-table td:last-child  {
+.ss-gsheet-table td:last-child {
   border-right: none;
   text-align: left !important;
-  padding: 5px 6px !important;
+  padding: 8px 10px !important;
   white-space: normal;
   font-family: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
-  font-size: 12px;
-  line-height: 1.25;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.3;
   vertical-align: middle;
+  color: var(--gs-text-dim);
 }
 .ss-gsheet-table td:first-child {
   text-align: left;
   font-family: var(--sans);
-  font-size: clamp(13px, 1.7vw, 16px);
-  font-weight: 500;
+  font-size: clamp(13px, 1.6vw, 15px);
+  font-weight: 600;
   color: var(--gs-text);
-  border-right: 2px solid var(--gs-divider-h);
+  border-right: 1px solid #000000;
+  padding-left: 10px;
+  letter-spacing: .01em;
 }
 .ss-gsheet-table tr:last-child td { border-bottom: none; }
 
-/* ── Full-row zebra on plain data rows only ── */
-.ss-gsheet-table tbody tr:nth-child(even) td         { background: var(--gs-surface-2); }
-.ss-gsheet-table tbody tr:nth-child(odd)  td         { background: var(--gs-surface); }
+/* ── No zebra — rows separated by padding and thin lines ── */
+.ss-gsheet-table tbody tr:nth-child(even) td { background: var(--gs-surface); }
+.ss-gsheet-table tbody tr:nth-child(odd)  td { background: var(--gs-surface); }
+/* Hover */
+.ss-gsheet-table tbody tr:hover td { background: var(--gs-hover) !important; }
 
-/* ── Column tints — RDO Balance (col 2) lavender, Target (col 3) mint ── */
-/* Odd rows: base tint. Even rows: slightly deeper same hue for zebra effect */
-.ss-gsheet-table tbody tr:nth-child(odd)  td:nth-child(2) { background: #f4f2ff !important; }
-.ss-gsheet-table tbody tr:nth-child(even) td:nth-child(2) { background: #ece9fa !important; }
-.ss-gsheet-table tbody tr:nth-child(odd)  td:nth-child(3) { background: #f0faf4 !important; }
-.ss-gsheet-table tbody tr:nth-child(even) td:nth-child(3) { background: #e4f4ea !important; }
-
-/* Don't apply column tints to special rows — let their bg show through */
-.ss-gsheet-table .gs-bold    td:nth-child(2),
-.ss-gsheet-table .gs-bold    td:nth-child(3),
-.ss-gsheet-table .gs-mcl     td:nth-child(2),
-.ss-gsheet-table .gs-mcl     td:nth-child(3),
-.ss-gsheet-table .gs-highest td:nth-child(2),
-.ss-gsheet-table .gs-highest td:nth-child(3) { background: inherit !important; }
-
-/* Hover overrides everything */
-.ss-gsheet-table tbody tr:hover td { background: var(--gs-hover) !important; transition: background .08s; }
-
-/* ── CF total rows (IBCF / TCF) ── */
+/* ── CF total rows — amber accent ── */
 .ss-gsheet-table .gs-bold td {
   background: var(--gs-cf-bg) !important;
   font-weight: 700;
-  border-top: 2px solid var(--gs-divider-h);
-  border-bottom: 1px solid var(--gs-divider);
-  font-size: clamp(14px, 1.8vw, 17px);
+  font-size: clamp(14px, 1.7vw, 16px);
   color: var(--gs-text);
+  border-top: 2px solid #000000;
+  border-bottom: 1px solid #000000;
 }
 .ss-gsheet-table .gs-bold td:first-child {
-  color: var(--gs-cf-text, var(--gs-header-text));
-  font-family: var(--sans);
-  font-weight: 700;
-  letter-spacing: .03em;
+  color: #38761d;
+  font-weight: 800;
+  letter-spacing: .04em;
   text-transform: uppercase;
+  border-left: 1px solid #000000;
+  padding-left: 10px;
 }
 
 /* ── MCL grand total ── */
 .ss-gsheet-table tr.gs-mcl td {
   background: var(--gs-mcl-bg) !important;
   font-weight: 800;
-  border-top: 3px solid var(--gs-divider-h);
-  font-size: clamp(15px, 2.0vw, 18px);
+  font-size: clamp(15px, 1.9vw, 17px);
   color: var(--gs-text);
+  border-top: 2px solid #000000;
 }
 .ss-gsheet-table tr.gs-mcl td:first-child {
-  color: var(--gs-mcl-text);
-  font-family: var(--sans);
+  color: #38761d;
   font-weight: 800;
-  letter-spacing: .03em;
+  letter-spacing: .04em;
   text-transform: uppercase;
+  border-left: 1px solid #000000;
+  padding-left: 10px;
 }
 
-/* ── Highest rows ── */
+/* ── Highest rows — subdued footnote style ── */
 .ss-gsheet-table .gs-highest td {
   background: var(--gs-highest-bg) !important;
-  font-family: var(--mono);
-  font-size: clamp(14px, 1.8vw, 17px);
-  font-weight: 500;
-  color: var(--gs-highest-txt);
-  border-bottom: 2px solid var(--gs-divider);
-  padding-top: 4px;
-  padding-bottom: 6px;
+  font-family: var(--sans);
+  font-size: clamp(11px, 1.3vw, 13px);
+  font-weight: 700;
+  font-style: normal;
+  color: #2e75b6;
+  border-bottom: 1px solid #000000;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 .ss-gsheet-table .gs-highest td:first-child {
-  font-family: var(--sans);
-  font-size: clamp(13px, 1.5vw, 15px);
-  font-weight: 600;
+  font-size: clamp(12px, 1.4vw, 14px);
+  font-weight: 700;
+  font-style: normal;
   text-transform: uppercase;
   letter-spacing: .08em;
-  color: var(--gs-text-dim);
-  border-right: 2px solid var(--gs-divider-h);
-  padding-left: 20px;
+  color: #1155cc;
+  border-left: 1px solid #000000;
+  padding-left: 10px;
 }
+
+/* Mine group A (IBCF section) first-col — pink/mauve */
+.ss-gsheet-table tr.gs-mine-a td:first-child { background: var(--gs-mine-a-bg) !important; font-weight: 600; }
+/* Mine group B (TCF section) first-col — peach/beige */
+.ss-gsheet-table tr.gs-mine-b td:first-child { background: var(--gs-mine-b-bg) !important; font-weight: 600; }
 
 /* loading spinner */
 .gs-spinner {
@@ -1570,7 +1567,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v2-B01-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B85-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -3067,6 +3064,20 @@ function renderGSheetTable(dt, table, dataStartRow, fetchRange) {
     table.appendChild(thead);
   }
 
+  // ── Pre-label mine groups via forward scan ──
+  // Mines before IBCF = group A (pink), mines before TCF = group B (peach)
+  const mineGroupLabel = new Array(dataRows.length).fill(null);
+  let nextMineGroup = null;
+  for (let i = dataRows.length - 1; i >= 0; i--) {
+    const c = dataRows[i].c || [];
+    const t = fmtGvizCell(c[0]);
+    if (/ibcf/i.test(t))       nextMineGroup = 'mine-a';
+    else if (/tcf/i.test(t))   nextMineGroup = 'mine-b';
+    else if (/mcl/i.test(t))   nextMineGroup = null;
+    else if (t && nextMineGroup) mineGroupLabel[i] = nextMineGroup;
+  }
+  let gsCurrentMineGroup = null;
+
   // ── Body ──
   const tbody = document.createElement('tbody');
   dataRows.forEach((row, rowIdx) => {
@@ -3086,6 +3097,14 @@ function renderGSheetTable(dt, table, dataStartRow, fetchRange) {
     if (isHighest)          tr.className = 'gs-highest';
     else if (isMCL)         tr.className = 'gs-bold gs-mcl';
     else if (isBold)        tr.className = 'gs-bold';
+
+    // Track mine group — update when we hit a CF total row
+    if (!firstEmpty && /ibcf/i.test(firstTxt))     gsCurrentMineGroup = null;
+    else if (!firstEmpty && /tcf/i.test(firstTxt)) gsCurrentMineGroup = null;
+    else if (!firstEmpty && /mcl/i.test(firstTxt)) gsCurrentMineGroup = null;
+    // Non-bold mine rows before IBCF = mine-a, before TCF = mine-b
+    if (!isBold && !isHighest && !firstEmpty && mineGroupLabel[rowIdx])
+      tr.classList.add('gs-' + mineGroupLabel[rowIdx]);
 
     // Last non-Remarks numeric col for MCL qty highlight
     const lastNumPos = visibleCols.length - 2;
@@ -3348,19 +3367,19 @@ async function shareReport() {
 
   const isDark = document.body.classList.contains('dark');
   const C = isDark ? {
-    bg:'#1c1c1a', surface:'#1c1c1a', raise:'#1e2820', edge:'#2c2c28', line:'#484440',
-    amber:'#f0a500', green:'#2fc97e', blue:'#7090c0', dim:'#686460', mid:'#7aaa80', text:'#ddd8d0', red:'#e05454',
-    headerBg:'#1e2820', headerText:'#7aaa80', divider:'#2c2c28', dividerH:'#484440',
-    cfBg:'#2c1e1e', cfText:'#c08080', mclBg:'#2c2610', mclText:'#c0a840',
-    highBg:'#1a1e2c', highTxt:'#7090c0',
-    colBalance:'#1e1c30', colTarget:'#162018',
+    bg:'#1e1e1e', surface:'#1e1e1e', raise:'#1e2a3a', edge:'#3c4043', line:'#5f6368',
+    amber:'#fdd663', green:'#2fc97e', blue:'#8ab4f8', dim:'#9aa0a6', mid:'#8ab4f8', text:'#e8eaed', red:'#e05454',
+    headerBg:'#1e2a3a', headerText:'#8ab4f8', divider:'#3c4043', dividerH:'#5f6368',
+    cfBg:'#2d2200', cfText:'#fdd663', mclBg:'#261c00', mclText:'#fcc934',
+    highBg:'#1a2744', highTxt:'#8ab4f8',
+    colBalance:'#1e1e1e', colTarget:'#1e1e1e',
   } : {
-    bg:'#f8f8f5', surface:'#ffffff', raise:'#fafaf8', edge:'#e4e2dc', line:'#c8c4b8',
-    amber:'#d4860a', green:'#1a9e5c', blue:'#3a5080', dim:'#a0a0a0', mid:'#3a5240', text:'#111111', red:'#c0392b',
-    headerBg:'#eef2eb', headerText:'#1a3220', divider:'#e4e2dc', dividerH:'#c8c4b8',
-    cfBg:'#fdf0f0', cfText:'#5a1a1a', mclBg:'#fdf6e4', mclText:'#4a3800',
-    highBg:'#f0f5ff', highTxt:'#1a3060',
-    colBalance:'#f4f2ff', colTarget:'#f0faf4',
+    bg:'#f8f9fa', surface:'#ffffff', raise:'#f8f9fa', edge:'#dadce0', line:'#bdc1c6',
+    amber:'#e37400', green:'#1a9e5c', blue:'#1a73e8', dim:'#80868b', mid:'#5f6368', text:'#202124', red:'#d93025',
+    headerBg:'#e8eef5', headerText:'#1a237e', divider:'#dadce0', dividerH:'#bdc1c6',
+    cfBg:'#fff8e6', cfText:'#e37400', mclBg:'#fff3cd', mclText:'#c67000',
+    highBg:'#e8f0fe', highTxt:'#1a73e8',
+    colBalance:'#f8f9fa', colTarget:'#f8f9fa',
   };
 
   const shownTime  = document.getElementById('asofBarTime').textContent;
@@ -3401,52 +3420,76 @@ async function shareReport() {
     const titleTr    = document.createElement('tr');
     const titleTd    = document.createElement('td');
     titleTd.setAttribute('colspan', colCount);
-    titleTd.style.cssText = `padding:12px 16px;background:${C.headerBg};border-bottom:2px solid ${C.dividerH};border-top:1px solid ${C.divider};border-left:1px solid ${C.divider};border-right:1px solid ${C.divider};text-align:center;`;
+    titleTd.style.cssText = 'padding:12px 16px;background:#00ffff;border:2px solid #000000;border-bottom:2px solid #000000;text-align:center;';
     titleTd.innerHTML =
       `<div style="text-align:center;width:100%;">` +
-      `<span style="font-family:IBM Plex Mono,monospace;font-size:17px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:${C.headerText};">Road Despatch dated&nbsp;&nbsp;</span>` +
-      `<span style="font-family:IBM Plex Mono,monospace;font-size:18px;font-weight:700;color:${C.text};letter-spacing:.5px;">${displayDate}</span>` +
+      `<span style="font-family:IBM Plex Mono,monospace;font-size:16px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#000000;">Road Despatch dated&nbsp;&nbsp;</span>` +
+      `<span style="font-family:IBM Plex Mono,monospace;font-size:20px;font-weight:700;color:#000000;letter-spacing:.5px;">${displayDate}</span>` +
       `</div>`;
     titleTr.appendChild(titleTd); titleThead.appendChild(titleTr);
     tbl.insertBefore(titleThead, tbl.firstChild);
-    // Header
+    // Column headers — white bg, black text, black borders (reference screenshot style)
     tbl.querySelectorAll('th').forEach((th, i) => {
-      sc(th, {fontSize:'14px',textTransform:'uppercase',letterSpacing:'.06em',color:C.headerText,fontFamily:'IBM Plex Sans,sans-serif',fontWeight:'700',
-        padding:'10px 14px',borderTop:`2px solid ${C.dividerH}`,borderBottom:`2px solid ${C.dividerH}`,
-        borderRight:`1px solid ${C.divider}`,background:C.headerBg,whiteSpace:'normal',wordBreak:'break-word',
-        textAlign:'center',verticalAlign:'middle',position:'static',maxWidth:'100px',lineHeight:'1.3'});
-      if (i===0){th.style.textAlign='left';th.style.whiteSpace='nowrap';th.style.borderRight=`2px solid ${C.dividerH}`;}
-      if (i===th.parentElement.children.length-1) th.style.borderRight='none';
+      sc(th, {fontSize:'13px',textTransform:'uppercase',letterSpacing:'.05em',color:'#000000',
+        fontFamily:'IBM Plex Sans,sans-serif',fontWeight:'700',
+        padding:'9px 12px',borderTop:'1px solid #000000',borderBottom:'2px solid #000000',
+        borderRight:'1px solid #000000',background:'#fce4d6',whiteSpace:'normal',
+        wordBreak:'break-word',textAlign:'center !important',verticalAlign:'middle',
+        position:'static',lineHeight:'1.3'});
+      if(i===0){th.style.textAlign='left';th.style.whiteSpace='nowrap';}
     });
-    // Body rows with zebra + row-type styling
-    let snapRow=0;
+    // Body rows — reference screenshot colours
     tbl.querySelectorAll('tbody tr').forEach(tr => {
-      snapRow++;
       const isBoldRow=tr.classList.contains('gs-bold');
       const isMclRow=tr.classList.contains('gs-mcl');
       const isHighestRow=tr.classList.contains('gs-highest');
-      const zebraBg = snapRow%2===0?(isDark?'#1a2424':'#f5f9f9'):C.surface;
-      const rowBg = isMclRow?C.mclBg:isBoldRow?C.cfBg:isHighestRow?C.highBg:zebraBg;
-      tr.querySelectorAll('td').forEach((td,i) => {
-        sc(td,{padding:'9px 14px',borderBottom:`1px solid ${C.divider}`,borderRight:`1px solid ${C.divider}`,
-          color:C.text,whiteSpace:'nowrap',textAlign:'right',verticalAlign:'middle',
-          fontFamily:'IBM Plex Mono,monospace',fontSize:'18px',fontVariantNumeric:'tabular-nums',background:rowBg});
-        const ci=Array.from(td.parentElement.children).indexOf(td);
-        // Column tints — RDO Balance (col 2) and Target (col 3)
-        if (!isBoldRow && !isMclRow && !isHighestRow) {
-          if(ci===1) td.style.background = C.colBalance;
-          if(ci===2) td.style.background = C.colTarget;
-        }
+      const isMineA=tr.classList.contains('gs-mine-a');
+      const isMineB=tr.classList.contains('gs-mine-b');
+      const rowBg=isMclRow?'#d9ead3':isBoldRow?'#d9ead3':isHighestRow?'#cfe2f3':'#ffffff';
+      tr.querySelectorAll('td').forEach((td,ci) => {
+        sc(td,{padding:'9px 12px',borderBottom:'1px solid #000000',borderRight:'1px solid #000000',
+          color:'#000000',whiteSpace:'nowrap',textAlign:'center',verticalAlign:'middle',
+          fontFamily:'IBM Plex Sans,sans-serif',fontSize:'17px',
+          fontVariantNumeric:'tabular-nums',background:rowBg});
         if(ci===0){
-          td.style.textAlign='left';td.style.fontFamily='IBM Plex Sans,sans-serif';
-          td.style.borderRight=`2px solid ${C.dividerH}`;
-          td.style.fontWeight=isMclRow?'800':isBoldRow?'700':'500';
-          if(isBoldRow&&!isMclRow){td.style.color=C.cfText;td.style.textTransform='uppercase';td.style.letterSpacing='.03em';} if(isMclRow){td.style.color=C.mclText;td.style.textTransform='uppercase';td.style.letterSpacing='.03em';}
-          if(isHighestRow){td.style.color=C.dim;td.style.fontSize='14px';td.style.textTransform='uppercase';td.style.letterSpacing='.08em';td.style.fontFamily='IBM Plex Sans,sans-serif';td.style.paddingLeft='22px';}
+          td.style.textAlign='left';
+          td.style.fontFamily='IBM Plex Sans,sans-serif';
+          td.style.fontWeight='600';
+          if(isBoldRow||isMclRow){
+            td.style.color='#38761d';
+            td.style.fontWeight='800';
+            td.style.textTransform='uppercase';
+            td.style.fontSize='18px';
+          } else if(isHighestRow){
+            td.style.color='#1155cc';
+            td.style.fontSize='14px';
+            td.style.fontWeight='700';
+            td.style.textTransform='uppercase';
+            td.style.letterSpacing='.06em';
+            td.style.paddingLeft='12px';
+          } else if(tr.classList.contains('gs-mine-a')){
+            td.style.background='#ead1dc';
+          } else if(tr.classList.contains('gs-mine-b')){
+            td.style.background='#fce5cd';
+          }
         }
-        if(td===td.parentElement.children[td.parentElement.children.length-1]) { td.style.borderRight='none'; td.style.whiteSpace='normal'; td.style.fontSize='12px'; td.style.minWidth='90px'; td.style.verticalAlign='top'; td.style.fontFamily="'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif"; td.style.lineHeight='1.3'; }
-        if(isBoldRow||isMclRow){td.style.fontWeight=isMclRow?'800':'700';td.style.fontSize=isMclRow?'21px':'20px';td.style.borderTop=`2px solid ${C.dividerH}`;}
-        if(isHighestRow){td.style.color=C.highTxt;td.style.fontSize='17px';}
+        if(ci===td.parentElement.children.length-1){
+          td.style.whiteSpace='normal';
+          td.style.fontSize='12px';
+          td.style.minWidth='80px';
+          td.style.fontFamily="'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif";
+          td.style.lineHeight='1.3';
+        }
+        if(isBoldRow||isMclRow){
+          td.style.fontWeight='800';
+          td.style.fontSize='19px';
+          td.style.borderTop='2px solid #000000';
+        }
+        if(isHighestRow){
+          td.style.color='#2e75b6';
+          td.style.fontSize='14px';
+          td.style.fontWeight='700';
+        }
       });
     });
     tbl.querySelectorAll('tr:last-child td').forEach(td=>{td.style.borderBottom='none';});
@@ -3510,7 +3553,7 @@ async function shareReport() {
   // Footer
   const footer = document.createElement('div');
   const provisionalColor = isDark ? '#667a99' : '#8999a0';
-  footer.style.cssText = `margin-top:10px;text-align:center;font-family:IBM Plex Mono,monospace;font-size:13px;color:${provisionalColor};letter-spacing:3px;text-transform:uppercase;`;
+  footer.style.cssText = `margin-top:12px;text-align:center;font-family:IBM Plex Mono,monospace;font-size:10px;color:${provisionalColor};letter-spacing:5px;text-transform:uppercase;opacity:.5;`;
   footer.textContent = 'Provisional';
   snap.appendChild(footer);
   document.body.appendChild(snap);
