@@ -1405,8 +1405,8 @@ body.dark {
   border-top: 1px solid #000000;
   border-bottom: 2px solid #000000;
   border-right: 1px solid #000000;
-  white-space: nowrap;
-  word-break: keep-all;
+  white-space: normal;
+  word-break: break-word;
   text-align: center !important;
   vertical-align: middle;
   line-height: 1.3;
@@ -1572,7 +1572,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B94-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B95-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -3438,11 +3438,11 @@ async function shareReport() {
       sc(th, {fontSize:'13px',textTransform:'uppercase',letterSpacing:'.05em',color:'#000000',
         fontFamily:'IBM Plex Sans,sans-serif',fontWeight:'700',
         padding:'9px 12px',borderTop:'1px solid #000000',borderBottom:'2px solid #000000',
-        borderRight:'1px solid #000000',background:'#fce4d6',whiteSpace:'nowrap',
-        wordBreak:'keep-all',textAlign:'center',verticalAlign:'middle',
+        borderRight:'1px solid #000000',background:'#fce4d6',whiteSpace:'normal',
+        wordBreak:'break-word',textAlign:'center',verticalAlign:'middle',
         position:'static',lineHeight:'1.3'});
       if(i===0){th.style.textAlign='left';th.style.whiteSpace='nowrap';}
-      if(i===th.parentElement.children.length-1){th.style.minWidth='90px';th.style.whiteSpace='nowrap';}
+      if(i===th.parentElement.children.length-1){th.style.minWidth='90px';th.style.whiteSpace='nowrap';th.style.wordBreak='keep-all';}
     });
     // Body rows — reference screenshot colours
     tbl.querySelectorAll('tbody tr').forEach(tr => {
