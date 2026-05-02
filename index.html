@@ -1092,7 +1092,7 @@ body {
 .area-table th.col-trips { text-align: center; white-space: nowrap; }
 .area-table th.col-net   { text-align: center; white-space: nowrap; }
 .area-table td {
-  padding: 5px 8px;
+  padding: 3px 8px;
   border-bottom: 1px solid #000000;
   border-right: 1px solid #000000;
   color: #000000;
@@ -1587,7 +1587,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B99-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B100-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -3424,7 +3424,7 @@ async function shareReport() {
   const snapWidth = ssViewOn ? Math.max(480, 130 + (visColCount - 1) * 105) : 520;
 
   const snap = document.createElement('div');
-  snap.style.cssText = `position:fixed;left:-9999px;top:0;width:${snapWidth}px;background:${C.bg};padding:16px;font-family:IBM Plex Sans,sans-serif;color:${C.text};`;
+  snap.style.cssText = `position:fixed;left:-9999px;top:0;width:${snapWidth}px;background:${C.bg};padding:16px;padding-top:24px;font-family:IBM Plex Sans,sans-serif;color:${C.text};`;
 
   const sc = (el, extra) => Object.assign(el.style, extra);
 
@@ -3469,7 +3469,7 @@ async function shareReport() {
       const isMineB=tr.classList.contains('gs-mine-b');
       const rowBg=isMclRow?'#d9ead3':isBoldRow?'#d9ead3':isHighestRow?'#cfe2f3':'#ffffff';
       tr.querySelectorAll('td').forEach((td,ci) => {
-        sc(td,{padding:'9px 12px',borderBottom:'1px solid #000000',borderRight:'1px solid #000000',
+        sc(td,{padding:'6px 10px',borderBottom:'1px solid #000000',borderRight:'1px solid #000000',
           color:'#000000',whiteSpace:'nowrap',textAlign:'center',verticalAlign:'middle',
           fontFamily:'IBM Plex Sans,sans-serif',fontSize:'17px',
           fontVariantNumeric:'tabular-nums',background:rowBg});
@@ -3516,6 +3516,10 @@ async function shareReport() {
       });
     });
     tbl.querySelectorAll('tr:last-child td').forEach(td=>{td.style.borderBottom='2px solid #000000';});
+    // Top safety band — ensures title isn't hidden under WhatsApp's interface bar
+    const topBand = document.createElement('div');
+    topBand.style.cssText = `height:8px;background:#00ffff;border-radius:4px 4px 0 0;margin-bottom:0;`;
+    snap.insertBefore(topBand, tbl);
     snap.appendChild(tbl);
 
   } else {
