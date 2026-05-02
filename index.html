@@ -311,42 +311,44 @@ body {
 
 /* "Data as of" inline bar above area table */
 .asof-bar {
-  background: var(--surface);
-  border: 1px solid var(--edge);
-  border-top: 3px solid var(--blue);
-  border-bottom: none;
-  padding: 10px 12px;
+  background: #00ffff;
+  border: 2px solid #000000;
+  border-bottom: 3px solid #000000;
+  padding: 10px 14px;
   display: flex;
   align-items: baseline;
   gap: 8px;
   flex-wrap: wrap;
+  border-radius: 4px 4px 0 0;
 }
 .asof-bar-time {
   font-family: var(--mono);
   font-size: 22px;
-  font-weight: 600;
-  color: var(--blue);
+  font-weight: 700;
+  color: #000000;
   letter-spacing: .5px;
   line-height: 1;
 }
-.asof-bar-time.warn { color: var(--red); }
+.asof-bar-time.warn { color: #c00000; }
 .asof-bar-date {
   font-family: var(--mono);
-  font-size: 12px;
-  color: var(--mid);
+  font-size: 13px;
+  color: #000000;
+  font-weight: 600;
 }
 .asof-bar-warn {
   font-family: var(--mono);
   font-size: 11px;
-  color: var(--red);
+  color: #c00000;
   width: 100%;
   margin-top: 2px;
 }
 .asof-bar-label {
-  font-size: 10px;
-  color: var(--dim);
+  font-size: 11px;
+  color: #000000;
   text-transform: uppercase;
   letter-spacing: .7px;
+  font-weight: 600;
   margin-right: 2px;
 }
 
@@ -1061,82 +1063,95 @@ body {
 .area-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: var(--mono);
-  font-size: 14px;
-  background: var(--surface);
-  border: 1px solid var(--edge);
-  table-layout: auto;       /* let browser size columns to content */
+  font-family: var(--sans);
+  font-size: 16px;
+  background: #ffffff;
+  border: 2px solid #000000;
+  table-layout: auto;
 }
-.area-table.hide-trips { font-size: 16px; }
+.area-table.hide-trips { font-size: 18px; }
 .area-table th {
-  font-size: 11px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: .6px;
-  color: var(--dim);
+  color: #000000;
   font-family: var(--sans);
-  font-weight: 500;
+  font-weight: 700;
   padding: 7px 8px;
-  text-align: left;
-  border-bottom: 2px solid var(--edge);
-  background: var(--raise);
-  white-space: nowrap;
+  text-align: center;
+  border: 1px solid #000000;
+  border-top: 1px solid #000000;
+  border-bottom: 2px solid #000000;
+  background: #fce4d6;
+  white-space: normal;
+  word-break: break-word;
 }
-.area-table th.col-area  { width: 100%; }   /* take all leftover space */
-.area-table th.col-trips { text-align: right; white-space: nowrap; }
-.area-table th.col-net   { text-align: right; white-space: nowrap; }
+.area-table th:first-child { text-align: left; border-left: 2px solid #000000; }
+.area-table th:last-child  { border-right: 2px solid #000000; }
+.area-table th.col-area  { width: 100%; text-align: left; }
+.area-table th.col-trips { text-align: center; white-space: nowrap; }
+.area-table th.col-net   { text-align: center; white-space: nowrap; }
 .area-table td {
   padding: 8px 8px;
-  border-bottom: 1px solid var(--edge);
-  color: var(--text);
-  white-space: nowrap;        /* never wrap — let table-layout:auto expand */
+  border-bottom: 1px solid #000000;
+  border-right: 1px solid #000000;
+  color: #000000;
+  white-space: nowrap;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
-.area-table td.col-area  { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 0; width: 100%; }
-.area-table td.col-trips { text-align: right; color: var(--dim); font-size: 12px; padding-left: 4px; }
-.area-table td.col-net   { text-align: right; padding-left: 4px; }
-.area-table tr:last-child td { border-bottom: none; }
+.area-table td:first-child { text-align: left; border-left: 2px solid #000000; border-right: 1px solid #000000; }
+.area-table td:last-child  { border-right: 2px solid #000000; }
+.area-table td.col-area  { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 0; width: 100%; text-align: left; }
+.area-table td.col-trips { text-align: center; color: #444444; font-size: 12px; padding-left: 4px; }
+.area-table td.col-net   { text-align: center; padding-left: 4px; }
+.area-table tr:last-child td { border-bottom: 2px solid #000000; }
 
-/* CF header row */
+/* CF header row — tan like column headers */
 .area-table tr.cf-header td {
-  background: var(--raise);
-  color: var(--mid);
-  font-size: 9px;
+  background: #fce4d6;
+  color: #000000;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: .7px;
-  padding: 4px 8px;
+  padding: 5px 8px;
   font-family: var(--sans);
-  border-bottom: 1px solid var(--edge);
-}
-/* CF subtotal row */
-.area-table tr.cf-total td {
-  background: var(--raise);
-  color: var(--mid);
-  font-weight: 600;
-  border-top: 1px solid var(--line);
-  border-bottom: 2px solid var(--edge);
-}
-.area-table tr.cf-total td.col-net { color: var(--amber); }
-/* MCL total row */
-.area-table tr.mcl-total td {
-  background: var(--edge);
-  color: var(--text);
   font-weight: 700;
-  font-size: 15px;
-  border-top: 2px solid var(--line);
+  border-bottom: 2px solid #000000;
+}
+/* CF subtotal row — green */
+.area-table tr.cf-total td {
+  background: #d9ead3;
+  color: #38761d;
+  font-weight: 700;
+  font-size: 17px;
+  border-top: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+}
+.area-table tr.cf-total td.col-net { color: #38761d; }
+/* MCL total row — green, larger */
+.area-table tr.mcl-total td {
+  background: #d9ead3;
+  color: #38761d;
+  font-weight: 800;
+  font-size: 17px;
+  border-top: 3px solid #000000;
+  border-bottom: 2px solid #000000;
   padding: 11px 8px;
 }
-.area-table.hide-trips tr.mcl-total td { font-size: 18px; padding: 13px 8px; }
-.area-table tr.mcl-total td.col-net { color: var(--green); }
-/* Rail to Road row */
+.area-table.hide-trips tr.mcl-total td { font-size: 20px; padding: 13px 8px; }
+.area-table tr.mcl-total td.col-net { color: #38761d; }
+/* Rail to Road row — blue bg */
 .area-table tr.r2r-row td {
-  color: var(--blue);
-  background: var(--raise);
+  color: #1155cc;
+  background: #cfe2f3;
   font-weight: 600;
-  border-top: 1px solid var(--line);
-  border-bottom: 2px solid var(--edge);
+  border-top: 2px solid #000000;
+  border-bottom: 2px solid #000000;
 }
-.area-table tr.r2r-row td.col-net { color: var(--blue); }
+.area-table tr.r2r-row td.col-net { color: #1155cc; }
 /* Zero rows dimmed */
-.area-table tr.zero-row td { color: var(--dim); }
+.area-table tr.zero-row td { color: #888888; }
 /* Hide trips column when toggled off */
 .area-table.hide-trips .col-trips { display: none; }
 .empty-state {
@@ -1145,30 +1160,30 @@ body {
   color: var(--dim);
   font-size: 13px;
 }
-/* Area header row (visible in area-view) */
+/* Area header row */
 .area-table tr.area-header td {
-  background: var(--raise);
-  color: var(--mid);
+  background: #fce4d6;
+  color: #000000;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: .6px;
   padding: 4px 8px 4px 14px;
   font-family: var(--sans);
-  border-bottom: 1px solid var(--edge);
-  font-weight: 600;
+  border-bottom: 2px solid #000000;
+  font-weight: 700;
 }
-.area-table tr.area-header td.col-net { color: var(--amber); font-size: 12px; }
-.area-table tr.area-header td.col-trips { font-size: 11px; color: var(--mid); }
-/* Area-only row (single colliery areas — merged area+total row) */
+.area-table tr.area-header td.col-net { color: #38761d; font-size: 12px; }
+.area-table tr.area-header td.col-trips { font-size: 11px; color: #444444; }
+/* Area-only row */
 .area-table tr.area-solo td {
-  color: var(--mid);
-  font-weight: 600;
+  color: #38761d;
+  font-weight: 700;
   font-size: 13px;
-  border-bottom: 1px solid var(--edge);
+  border-bottom: 1px solid #000000;
 }
-.area-table tr.area-solo td.col-net { color: var(--amber); }
+.area-table tr.area-solo td.col-net { color: #38761d; }
 .area-table tr.area-solo td.col-area { padding-left: 10px; }
-/* Project rows (indented under area in area-view) */
+/* Project rows */
 .area-table tr.project-row td.col-area { padding-left: 20px; }
 /* Unknown DO row */
 .area-table tr.unknown-row td {
@@ -1572,7 +1587,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v2-B01-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B98-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
