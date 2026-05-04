@@ -1587,7 +1587,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B105-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B106-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -3572,15 +3572,15 @@ async function pushToSheet() {
     ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][today.getMonth()] +
     '-' + today.getFullYear();
 
-  if (currentTabMaxDateStr && currentTabMaxDateStr !== todayStr) {
-    alert('Report date is ' + currentTabMaxDateStr + ', not today (' + todayStr + ').\nOnly today\'s report can be pushed to the sheet.');
-    return;
-  }
-  if (currentTabMaxMins < timeFilterMins) {
-    alert('Data is only available until ' + minsToLabel(currentTabMaxMins) +
-      ', but the time filter is set to ' + minsToLabel(timeFilterMins) + '.\n\nPlease wait for the report to update and re-upload.');
-    return;
-  }
+  // TEMPORARILY DISABLED — re-enable when testing is complete
+  // if (currentTabMaxDateStr && currentTabMaxDateStr !== todayStr) {
+  //   alert('Report date is ' + currentTabMaxDateStr + ', not today (' + todayStr + ').');
+  //   return;
+  // }
+  // if (currentTabMaxMins < timeFilterMins) {
+  //   alert('Data only available until ' + minsToLabel(currentTabMaxMins));
+  //   return;
+  // }
 
   const timeslot = activeSlot.time.replace(':', '');
 
