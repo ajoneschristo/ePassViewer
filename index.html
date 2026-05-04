@@ -1064,14 +1064,14 @@ body {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: 16px;
   background: #ffffff;
   border: 2px solid #000000;
   table-layout: auto;
 }
-.area-table.hide-trips { font-size: 16px; }
+.area-table.hide-trips { font-size: 18px; }
 .area-table th {
-  font-size: 11px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: .6px;
   color: #000000;
@@ -1092,7 +1092,7 @@ body {
 .area-table th.col-trips { text-align: center; white-space: nowrap; }
 .area-table th.col-net   { text-align: center; white-space: nowrap; }
 .area-table td {
-  padding: 8px 8px;
+  padding: 3px 8px;
   border-bottom: 1px solid #000000;
   border-right: 1px solid #000000;
   color: #000000;
@@ -1124,6 +1124,7 @@ body {
   background: #d9ead3;
   color: #38761d;
   font-weight: 700;
+  font-size: 17px;
   border-top: 2px solid #000000;
   border-bottom: 2px solid #000000;
 }
@@ -1133,12 +1134,12 @@ body {
   background: #d9ead3;
   color: #38761d;
   font-weight: 800;
-  font-size: 15px;
+  font-size: 17px;
   border-top: 3px solid #000000;
   border-bottom: 2px solid #000000;
-  padding: 11px 8px;
+  padding: 7px 8px;
 }
-.area-table.hide-trips tr.mcl-total td { font-size: 18px; padding: 13px 8px; }
+.area-table.hide-trips tr.mcl-total td { font-size: 20px; padding: 9px 8px; }
 .area-table tr.mcl-total td.col-net { color: #38761d; }
 /* Rail to Road row — blue bg */
 .area-table tr.r2r-row td {
@@ -1586,7 +1587,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B97-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B104-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -1889,83 +1890,42 @@ body.dark {
 //  COLLIERY MASTER MAP (hardcoded business logic)
 //  key = Colliery Code (string), value = { name, area, cf }
 // ═══════════════════════════════════════════════════════
-const COLLIERY_MAP = {
-  // IB Coalfield
-  '5025': { name: 'Basundhara (W) OCP',    area: 'Mahalaxmi Area',  cf: 'IB CF' },
-  '5162': { name: 'Siarmal OCP',            area: 'Mahalaxmi Area',  cf: 'IB CF' },
-  '5026': { name: 'Kulda OCP',              area: 'Basundhara Area', cf: 'IB CF' },
-  '5035': { name: 'Garjanbahal OCP',        area: 'Basundhara Area', cf: 'IB CF' },
-  '5064': { name: 'Lajkura OCP',            area: 'IB Valley Area',  cf: 'IB CF' },
-  '5065': { name: 'Samleswari OCP',         area: 'IB Valley Area',  cf: 'IB CF' },
-  '5068': { name: 'IBV CW (Rejects)',       area: 'Lakhanpur Area',  cf: 'IB CF' },
-  '5158': { name: 'Integrated LBL OCP',     area: 'Lakhanpur Area',  cf: 'IB CF' },
-  '5150': { name: 'HBI',                    area: 'Orient Area',     cf: 'IB CF' },
-  '5151': { name: 'Orient UG Mine',         area: 'Orient Area',     cf: 'IB CF' },
-  // Talcher Coalfield
-  '5046': { name: 'Ananta OCP',             area: 'Jagannath Area',  cf: 'Talcher CF' },
-  '5075': { name: 'Jagannath OCP',          area: 'Jagannath Area',  cf: 'Talcher CF' },
-  '5077': { name: 'Bhubaneswari OCP',       area: 'Bhubaneswari Area', cf: 'Talcher CF' },
-  '5055': { name: 'Balram OCP',             area: 'Hingula Area',    cf: 'Talcher CF' },
-  '5054': { name: 'Hingula OCP',            area: 'Hingula Area',    cf: 'Talcher CF' },
-  '5044': { name: 'Bharatpur OCP',          area: 'Bharatpur Area',  cf: 'Talcher CF' },
-  '5114': { name: 'Lingaraj OCP',           area: 'Lingaraj Area',   cf: 'Talcher CF' },
-  '5094': { name: 'Kaniha OCP',             area: 'Kaniha Area',     cf: 'Talcher CF' },
-  '5165': { name: 'Nandira UG Mine',        area: 'Talcher Area',    cf: 'Talcher CF' },
-};
-
-// CF display order and Area display order within each CF
-const CF_ORDER = ['IB CF', 'Talcher CF'];
-const CF_AREAS = {
-  'IB CF':      ['Mahalaxmi Area','Basundhara Area','IB Valley Area','Lakhanpur Area','Orient Area'],
-  'Talcher CF': ['Jagannath Area','Bhubaneswari Area','Hingula Area','Bharatpur Area','Lingaraj Area','Kaniha Area','Talcher Area'],
-};
-
-// Which areas have only one colliery? (derived from COLLIERY_MAP)
-function buildSoloAreaSet() {
-  const count = {};
-  for (const code in COLLIERY_MAP) {
-    const a = COLLIERY_MAP[code].area;
-    count[a] = (count[a] || 0) + 1;
-  }
-  const solo = new Set();
-  for (const a in count) { if (count[a] === 1) solo.add(a); }
-  return solo;
-}
-const SOLO_AREAS = buildSoloAreaSet();
-
 // ═══════════════════════════════════════════════════════
-//  RDO → AREA MAPPING (DORMANT — kept for dev reference)
+//  DYNAMIC COLLIERY MAPS — built from appSettings.mines
+//  No hardcoded colliery data anywhere in the app.
+//  Call buildDynamicMaps() after settings are loaded.
 // ═══════════════════════════════════════════════════════
-/*
-const RDO_MAP = [
-  { p: ['109','129','139'], cf: 'IB CF',      area: 'Basundhara Area'    },
-  { p: ['107','127','137'], cf: 'IB CF',      area: 'IB Valley Area'     },
-  { p: ['110','130','140'], cf: 'IB CF',      area: 'Lakhanpur Area'     },
-  { p: ['108','128'],       cf: 'IB CF',      area: 'Orient Area'        },
-  { p: ['101','124','131'], cf: 'Talcher CF', area: 'Jagannath Area'     },
-  { p: ['102','121','132'], cf: 'Talcher CF', area: 'Hingula Area'       },
-  { p: ['104','123','134'], cf: 'Talcher CF', area: 'Bharatpur Area'     },
-  { p: ['105','125','135'], cf: 'Talcher CF', area: 'Lingaraj Area'      },
-  { p: ['103','122','133'], cf: 'Talcher CF', area: 'Kaniha Area'        },
-  { p: ['106','126'],       cf: 'Talcher CF', area: 'Talcher Area'       },
-];
-const RAIL_TO_ROAD_PREFIX = '117';
-function rdoToArea(rdoStr) {
-  if (!rdoStr) return null;
-  const s = String(rdoStr).trim();
-  if (s.startsWith(RAIL_TO_ROAD_PREFIX)) return { cf: '__R2R__', area: 'Rail to Road' };
-  for (const entry of RDO_MAP) {
-    for (const pfx of entry.p) {
-      if (s.startsWith(pfx)) return { cf: entry.cf, area: entry.area };
+let dynamicCFGroups = [];   // [{ cfLabel, mines:[{label,codes[],collieryName}] }]
+let codeToMine      = {};   // collieryCode → { label, collieryName, cfLabel }
+
+function buildDynamicMaps() {
+  dynamicCFGroups = [];
+  codeToMine      = {};
+  if (!appSettings || !Array.isArray(appSettings.mines)) return;
+
+  const mines = appSettings.mines;
+  let pendingMines = [];
+
+  for (const m of mines) {
+    if (m.isGrandTotal) break;
+
+    if (m.isTotal) {
+      // All pendingMines belong to this CF
+      const group = { cfLabel: m.label, mines: pendingMines };
+      dynamicCFGroups.push(group);
+      for (const mine of pendingMines) {
+        for (const code of mine.codes) {
+          codeToMine[code] = { label: mine.label, collieryName: mine.collieryName, cfLabel: m.label };
+        }
+      }
+      pendingMines = [];
+    } else {
+      const codes = (m.colCodes || '').split(',').map(c => c.trim()).filter(Boolean);
+      pendingMines.push({ label: m.label, codes, collieryName: m.collieryName || m.label });
     }
   }
-  return { cf: '__OTHER__', area: 'Other' };
 }
-*/
 
-// ═══════════════════════════════════════════════════════
-//  GITHUB CLOUD SYNC CONFIG
-// ═══════════════════════════════════════════════════════
 const GH = {
   owner:  'ajoneschristo',
   repo:   'epass-db',
@@ -2605,10 +2565,10 @@ function updateStats() {
       if (doNum) unknownDOs.add(doNum);
     } else {
       const colCode = mclhoDB[doNum].collieryCode;
-      if (COLLIERY_MAP[colCode]) {
+      if (codeToMine[colCode]) {
         accCol(colCode, g, t);
       } else {
-        // Colliery code not in our map
+        // Colliery code not in settings — count as unknown
         unknownG += g; unknownT += t; unknownTrips++;
         unknownDOs.add(doNum);
       }
@@ -2705,74 +2665,29 @@ function renderAreaTable(colAcc, unknownG, unknownT, unknownTrips) {
 
   let mclG = 0, mclT = 0, mclTrips = 0;
 
-  if (!areaViewOn) {
-    // ── COLLIERY VIEW (default) ─────────────────────────
-    // CF Header → flat colliery rows → CF subtotal
-    for (const cf of CF_ORDER) {
-      addRow('cf-header', [cf, '', '']);
-      let cfG = 0, cfT = 0, cfTrips = 0;
-      // Get all collieries under this CF in map order
-      for (const code in COLLIERY_MAP) {
-        if (COLLIERY_MAP[code].cf !== cf) continue;
+  // ── COLLIERY VIEW using dynamic settings-based grouping ──
+  for (const group of dynamicCFGroups) {
+    addRow('cf-header', [group.cfLabel, '', '']);
+    let cfG = 0, cfT = 0, cfTrips = 0;
+
+    for (const mine of group.mines) {
+      let mG = 0, mT = 0, mTrips = 0;
+      for (const code of mine.codes) {
         const acc = colAcc[code];
-        const g = acc ? acc.g : 0;
-        const t = acc ? acc.t : 0;
-        const trips = acc ? acc.trips : 0;
-        const net = g - t;
-        cfG += g; cfT += t; cfTrips += trips;
-        const cls = net === 0 ? 'zero-row' : '';
-        addRow(cls, [COLLIERY_MAP[code].name, trips.toLocaleString(), fmt(net)]);
+        if (acc) { mG += acc.g; mT += acc.t; mTrips += acc.trips; }
       }
-      const cfNet = cfG - cfT;
-      mclG += cfG; mclT += cfT; mclTrips += cfTrips;
-      addRow('cf-total', [cf + ' Total', cfTrips.toLocaleString(), fmt(cfNet)]);
+      const net = mG - mT;
+      cfG += mG; cfT += mT; cfTrips += mTrips;
+      const cls = net === 0 ? 'zero-row' : '';
+      addRow(cls, [mine.collieryName, mTrips.toLocaleString(), fmt(net)]);
     }
-  } else {
-    // ── AREA VIEW ───────────────────────────────────────
-    // CF Header → Area rows (with colliery children if >1 colliery in area) → CF subtotal
-    for (const cf of CF_ORDER) {
-      addRow('cf-header', [cf, '', '']);
-      let cfG = 0, cfT = 0, cfTrips = 0;
 
-      for (const area of (CF_AREAS[cf] || [])) {
-        // Collect collieries in this area
-        const areaCols = Object.keys(COLLIERY_MAP).filter(
-          code => COLLIERY_MAP[code].area === area && COLLIERY_MAP[code].cf === cf
-        );
-        let aG = 0, aT = 0, aTrips = 0;
-        for (const code of areaCols) {
-          const acc = colAcc[code];
-          if (acc) { aG += acc.g; aT += acc.t; aTrips += acc.trips; }
-        }
-        const aNet = aG - aT;
-        cfG += aG; cfT += aT; cfTrips += aTrips;
-
-        if (SOLO_AREAS.has(area)) {
-          // Only one colliery — show area name only (no child row)
-          const cls = 'area-solo' + (aNet === 0 ? ' zero-row' : '');
-          addRow(cls, [area, aTrips.toLocaleString(), fmt(aNet)]);
-        } else {
-          // Multiple collieries — area header + indented children
-          const areaHeaderCls = 'area-header' + (aNet === 0 ? ' zero-row' : '');
-          addRow(areaHeaderCls, [area, aTrips.toLocaleString(), fmt(aNet)]);
-          for (const code of areaCols) {
-            const acc = colAcc[code];
-            const g = acc ? acc.g : 0;
-            const t = acc ? acc.t : 0;
-            const trips = acc ? acc.trips : 0;
-            const net = g - t;
-            const cls = 'project-row' + (net === 0 ? ' zero-row' : '');
-            addRow(cls, [COLLIERY_MAP[code].name, trips.toLocaleString(), fmt(net)]);
-          }
-        }
-      }
-      const cfNet = cfG - cfT;
-      mclG += cfG; mclT += cfT; mclTrips += cfTrips;
-      addRow('cf-total', [cf + ' Total', cfTrips.toLocaleString(), fmt(cfNet)]);
-    }
+    const cfNet = cfG - cfT;
+    mclG += cfG; mclT += cfT; mclTrips += cfTrips;
+    addRow('cf-total', [group.cfLabel + ' Total', cfTrips.toLocaleString(), fmt(cfNet)]);
   }
 
-  // Unknown row (if any)
+    // Unknown row (if any)
   const unknownNet = unknownG - unknownT;
   if (unknownTrips > 0) {
     addRow('unknown-row', ['Unknown', unknownTrips.toLocaleString(), fmt(unknownNet)]);
@@ -3423,7 +3338,7 @@ async function shareReport() {
   const snapWidth = ssViewOn ? Math.max(480, 130 + (visColCount - 1) * 105) : 520;
 
   const snap = document.createElement('div');
-  snap.style.cssText = `position:fixed;left:-9999px;top:0;width:${snapWidth}px;background:${C.bg};padding:16px;font-family:IBM Plex Sans,sans-serif;color:${C.text};`;
+  snap.style.cssText = `position:fixed;left:-9999px;top:0;width:${snapWidth}px;background:${C.bg};padding:16px;padding-top:24px;padding-bottom:32px;font-family:IBM Plex Sans,sans-serif;color:${C.text};`;
 
   const sc = (el, extra) => Object.assign(el.style, extra);
 
@@ -3468,7 +3383,7 @@ async function shareReport() {
       const isMineB=tr.classList.contains('gs-mine-b');
       const rowBg=isMclRow?'#d9ead3':isBoldRow?'#d9ead3':isHighestRow?'#cfe2f3':'#ffffff';
       tr.querySelectorAll('td').forEach((td,ci) => {
-        sc(td,{padding:'9px 12px',borderBottom:'1px solid #000000',borderRight:'1px solid #000000',
+        sc(td,{padding:'6px 10px',borderBottom:'1px solid #000000',borderRight:'1px solid #000000',
           color:'#000000',whiteSpace:'nowrap',textAlign:'center',verticalAlign:'middle',
           fontFamily:'IBM Plex Sans,sans-serif',fontSize:'17px',
           fontVariantNumeric:'tabular-nums',background:rowBg});
@@ -3515,7 +3430,16 @@ async function shareReport() {
       });
     });
     tbl.querySelectorAll('tr:last-child td').forEach(td=>{td.style.borderBottom='2px solid #000000';});
+    // Top safety band — ensures title isn't hidden under WhatsApp's interface bar
+    const topBand = document.createElement('div');
+    topBand.style.cssText = `height:8px;background:#00ffff;border-radius:4px 4px 0 0;margin-bottom:0;`;
+    snap.insertBefore(topBand, tbl);
     snap.appendChild(tbl);
+
+    // Bottom safety band — prevents WhatsApp bottom bar from obscuring PROVISIONAL
+    const bottomBand = document.createElement('div');
+    bottomBand.style.cssText = 'height:8px;background:#00ffff;border-radius:0 0 4px 4px;margin-top:0;';
+    snap.appendChild(bottomBand);
 
   } else {
     // ── Area / Colliery table ──────────────────────────
@@ -3575,7 +3499,7 @@ async function shareReport() {
   // Footer
   const footer = document.createElement('div');
   const provisionalColor = isDark ? '#667a99' : '#8999a0';
-  footer.style.cssText = `margin-top:12px;text-align:center;font-family:IBM Plex Mono,monospace;font-size:10px;color:${provisionalColor};letter-spacing:5px;text-transform:uppercase;opacity:.5;`;
+  footer.style.cssText = `margin-top:10px;margin-bottom:8px;text-align:center;font-family:IBM Plex Mono,monospace;font-size:10px;color:${provisionalColor};letter-spacing:5px;text-transform:uppercase;opacity:.5;`;
   footer.textContent = 'Provisional';
   snap.appendChild(footer);
   document.body.appendChild(snap);
@@ -3705,7 +3629,16 @@ async function pushToSheet() {
     return;
   }
 
-  // 5. Fire push to Apps Script
+  // ── Preview: show what will be pushed ──────────────────
+  const preview = pushRows
+    .map(r => `Row ${r.row}: ${r.label} → ${r.qty.toLocaleString()} T`)
+    .join('\n');
+  const confirmed = confirm(
+    `Push to sheet column ${col} (${minsToLabel(timeFilterMins)})?\n\n` +
+    preview +
+    '\n\nTap OK to confirm.'
+  );
+  if (!confirmed) return;
   const btn = document.getElementById('sheetPushBtn');
   const origText = btn.innerHTML;
   btn.disabled = true;
@@ -3744,6 +3677,13 @@ async function pushToSheet() {
     btn.innerHTML = '✓ Done';
     btn.style.color = '#0f9d58';
     setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; btn.style.opacity = ''; btn.style.color = ''; }, 2500);
+
+    // Warn if any mine rows had zero quantity (possible code mismatch)
+    const zeroRows = pushRows.filter(r => r.qty === 0 && !mines.find(m => m.label === r.label && (m.isTotal || m.isGrandTotal)));
+    if (zeroRows.length > 0) {
+      const zeroLabels = zeroRows.map(r => r.label).join(', ');
+      setTimeout(() => alert('⚠️ These mines pushed with 0 tonnes:\n' + zeroLabels + '\n\nPossible causes:\n• Colliery code in Settings doesn\'t match DO database\n• No DOs found for this mine in the uploaded XLS'), 300);
+    }
 
     // Auto-refresh Sheet view if it's ON — give the sheet 2s to process the push
     if (ssViewOn) setTimeout(() => fetchAndRenderGSheet(), 2000);
@@ -4230,21 +4170,21 @@ let appSettings = {
     { label: 'Int. LBL',      colCodes: '5158',       sheetRow: 9,  collieryName: 'Integrated LBL OCP' },
     { label: 'Kulda',         colCodes: '5026',       sheetRow: 10, collieryName: 'Kulda OCP' },
     { label: 'Garjanbahal',   colCodes: '5035',       sheetRow: 11, collieryName: 'Garjanbahal OCP' },
-    { label: 'Basundhara(W)', colCodes: '5025',       sheetRow: 13, collieryName: 'Basundhara (W) OCP' },
-    { label: 'Siarmal',       colCodes: '5162',       sheetRow: 12,  collieryName: 'Siarmal OCP' },
-    { label: 'Orient',        colCodes: '5151,5150',  sheetRow: 14, collieryName: 'Orient UG Mine + HBI' },
-    { label: 'IBCF',          colCodes: '',           sheetRow: 15, collieryName: 'IB Coalfield Total', isTotal: true },
-    { label: 'Jagannath',     colCodes: '5075',       sheetRow: 17, collieryName: 'Jagannath OCP' },
-    { label: 'Ananta',        colCodes: '5046',       sheetRow: 18, collieryName: 'Ananta OCP' },
-    { label: 'Bhubaneswari',  colCodes: '5077',       sheetRow: 19, collieryName: 'Bhubaneswari OCP' },
-    { label: 'Bharatpur',     colCodes: '5044',       sheetRow: 20, collieryName: 'Bharatpur OCP' },
-    { label: 'Lingaraj',      colCodes: '5114',       sheetRow: 21, collieryName: 'Lingaraj OCP' },
-    { label: 'Hingula',       colCodes: '5054',       sheetRow: 22, collieryName: 'Hingula OCP' },
-    { label: 'Balram',        colCodes: '5055',       sheetRow: 23, collieryName: 'Balram OCP' },
-    { label: 'Kaniha',        colCodes: '5094',       sheetRow: 24, collieryName: 'Kaniha OCP' },
-    { label: 'Nandira',       colCodes: '5165',       sheetRow: 25, collieryName: 'Nandira UG Mine' },
-    { label: 'TCF',           colCodes: '',           sheetRow: 26, collieryName: 'Talcher Coalfield Total', isTotal: true },
-    { label: 'MCL',           colCodes: '',           sheetRow: 28, collieryName: 'MCL Total', isGrandTotal: true },
+    { label: 'Basundhara(W)', colCodes: '5025',       sheetRow: 12, collieryName: 'Basundhara (W) OCP' },
+    { label: 'Siarmal',       colCodes: '5162',       sheetRow: 0,  collieryName: 'Siarmal OCP' },
+    { label: 'Orient',        colCodes: '5151,5150',  sheetRow: 13, collieryName: 'Orient UG Mine + HBI' },
+    { label: 'IBCF',          colCodes: '',           sheetRow: 14, collieryName: 'IB Coalfield Total', isTotal: true },
+    { label: 'Jagannath',     colCodes: '5075',       sheetRow: 16, collieryName: 'Jagannath OCP' },
+    { label: 'Ananta',        colCodes: '5046',       sheetRow: 17, collieryName: 'Ananta OCP' },
+    { label: 'Bhubaneswari',  colCodes: '5077',       sheetRow: 18, collieryName: 'Bhubaneswari OCP' },
+    { label: 'Bharatpur',     colCodes: '5044',       sheetRow: 19, collieryName: 'Bharatpur OCP' },
+    { label: 'Lingaraj',      colCodes: '5114',       sheetRow: 20, collieryName: 'Lingaraj OCP' },
+    { label: 'Hingula',       colCodes: '5054',       sheetRow: 21, collieryName: 'Hingula OCP' },
+    { label: 'Balram',        colCodes: '5055',       sheetRow: 22, collieryName: 'Balram OCP' },
+    { label: 'Kaniha',        colCodes: '5094',       sheetRow: 23, collieryName: 'Kaniha OCP' },
+    { label: 'Nandira',       colCodes: '5165',       sheetRow: 24, collieryName: 'Nandira UG Mine' },
+    { label: 'TCF',           colCodes: '',           sheetRow: 25, collieryName: 'Talcher Coalfield Total', isTotal: true },
+    { label: 'MCL',           colCodes: '',           sheetRow: 27, collieryName: 'MCL Total', isGrandTotal: true },
   ],
 };
 let _settingsSha = null;
@@ -4410,6 +4350,7 @@ async function loadSettingsFromGitHub() {
     if (parsed.sheetName)  appSettings.sheetName  = parsed.sheetName;
     if (parsed.sheetRange) appSettings.sheetRange = parsed.sheetRange;
     if (parsed.scriptUrl) { appSettings.scriptUrl = parsed.scriptUrl; SHEET_WEBAPP_URL = parsed.scriptUrl; }
+    buildDynamicMaps(); // rebuild colliery→CF mapping from loaded settings
   } catch(e) { /* use defaults */ }
 }
 
@@ -4626,6 +4567,7 @@ async function saveSettings() {
     const resp = await res.json();
     _settingsSha = resp.content.sha;
     appSettings = newSettings;
+    buildDynamicMaps(); // rebuild colliery→CF mapping from new settings
     if (appSettings.scriptUrl) SHEET_WEBAPP_URL = appSettings.scriptUrl;
     status.textContent = '✓ Saved'; status.style.color = 'var(--green)';
     setTimeout(closeSettings, 1200);
@@ -4636,6 +4578,7 @@ async function saveSettings() {
 }
 
 loadSettingsFromGitHub().then(() => {
+  buildDynamicMaps(); // ensure maps are built with defaults if load fails
   if (ssViewOn) { applyTableVisibility(); fetchAndRenderGSheet(); }
 });
 loadDbFromGitHub();
