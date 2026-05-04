@@ -1064,14 +1064,14 @@ body {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: 16px;
   background: #ffffff;
   border: 2px solid #000000;
   table-layout: auto;
 }
-.area-table.hide-trips { font-size: 16px; }
+.area-table.hide-trips { font-size: 18px; }
 .area-table th {
-  font-size: 11px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: .6px;
   color: #000000;
@@ -1092,7 +1092,7 @@ body {
 .area-table th.col-trips { text-align: center; white-space: nowrap; }
 .area-table th.col-net   { text-align: center; white-space: nowrap; }
 .area-table td {
-  padding: 8px 8px;
+  padding: 3px 8px;
   border-bottom: 1px solid #000000;
   border-right: 1px solid #000000;
   color: #000000;
@@ -1124,6 +1124,7 @@ body {
   background: #d9ead3;
   color: #38761d;
   font-weight: 700;
+  font-size: 17px;
   border-top: 2px solid #000000;
   border-bottom: 2px solid #000000;
 }
@@ -1133,12 +1134,12 @@ body {
   background: #d9ead3;
   color: #38761d;
   font-weight: 800;
-  font-size: 15px;
+  font-size: 17px;
   border-top: 3px solid #000000;
   border-bottom: 2px solid #000000;
-  padding: 11px 8px;
+  padding: 7px 8px;
 }
-.area-table.hide-trips tr.mcl-total td { font-size: 18px; padding: 13px 8px; }
+.area-table.hide-trips tr.mcl-total td { font-size: 20px; padding: 9px 8px; }
 .area-table tr.mcl-total td.col-net { color: #38761d; }
 /* Rail to Road row — blue bg */
 .area-table tr.r2r-row td {
@@ -1586,7 +1587,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B97-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B102-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -3423,7 +3424,7 @@ async function shareReport() {
   const snapWidth = ssViewOn ? Math.max(480, 130 + (visColCount - 1) * 105) : 520;
 
   const snap = document.createElement('div');
-  snap.style.cssText = `position:fixed;left:-9999px;top:0;width:${snapWidth}px;background:${C.bg};padding:16px;font-family:IBM Plex Sans,sans-serif;color:${C.text};`;
+  snap.style.cssText = `position:fixed;left:-9999px;top:0;width:${snapWidth}px;background:${C.bg};padding:16px;padding-top:24px;padding-bottom:32px;font-family:IBM Plex Sans,sans-serif;color:${C.text};`;
 
   const sc = (el, extra) => Object.assign(el.style, extra);
 
@@ -3468,7 +3469,7 @@ async function shareReport() {
       const isMineB=tr.classList.contains('gs-mine-b');
       const rowBg=isMclRow?'#d9ead3':isBoldRow?'#d9ead3':isHighestRow?'#cfe2f3':'#ffffff';
       tr.querySelectorAll('td').forEach((td,ci) => {
-        sc(td,{padding:'9px 12px',borderBottom:'1px solid #000000',borderRight:'1px solid #000000',
+        sc(td,{padding:'6px 10px',borderBottom:'1px solid #000000',borderRight:'1px solid #000000',
           color:'#000000',whiteSpace:'nowrap',textAlign:'center',verticalAlign:'middle',
           fontFamily:'IBM Plex Sans,sans-serif',fontSize:'17px',
           fontVariantNumeric:'tabular-nums',background:rowBg});
@@ -3515,7 +3516,16 @@ async function shareReport() {
       });
     });
     tbl.querySelectorAll('tr:last-child td').forEach(td=>{td.style.borderBottom='2px solid #000000';});
+    // Top safety band — ensures title isn't hidden under WhatsApp's interface bar
+    const topBand = document.createElement('div');
+    topBand.style.cssText = `height:8px;background:#00ffff;border-radius:4px 4px 0 0;margin-bottom:0;`;
+    snap.insertBefore(topBand, tbl);
     snap.appendChild(tbl);
+
+    // Bottom safety band — prevents WhatsApp bottom bar from obscuring PROVISIONAL
+    const bottomBand = document.createElement('div');
+    bottomBand.style.cssText = 'height:8px;background:#00ffff;border-radius:0 0 4px 4px;margin-top:0;';
+    snap.appendChild(bottomBand);
 
   } else {
     // ── Area / Colliery table ──────────────────────────
@@ -3575,7 +3585,7 @@ async function shareReport() {
   // Footer
   const footer = document.createElement('div');
   const provisionalColor = isDark ? '#667a99' : '#8999a0';
-  footer.style.cssText = `margin-top:12px;text-align:center;font-family:IBM Plex Mono,monospace;font-size:10px;color:${provisionalColor};letter-spacing:5px;text-transform:uppercase;opacity:.5;`;
+  footer.style.cssText = `margin-top:10px;margin-bottom:8px;text-align:center;font-family:IBM Plex Mono,monospace;font-size:10px;color:${provisionalColor};letter-spacing:5px;text-transform:uppercase;opacity:.5;`;
   footer.textContent = 'Provisional';
   snap.appendChild(footer);
   document.body.appendChild(snap);
@@ -3679,7 +3689,7 @@ async function pushToSheet() {
   let subtotal = 0, grandTotal = 0;
 
   for (const mine of mines) {
-    if (mine.sheetRow == null || mine.sheetRow === 0) continue;
+    if (!mine.sheetRow) continue;
     let qty = 0;
     if (mine.isGrandTotal) {
       qty = Math.round(grandTotal);
@@ -3744,6 +3754,13 @@ async function pushToSheet() {
     btn.innerHTML = '✓ Done';
     btn.style.color = '#0f9d58';
     setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; btn.style.opacity = ''; btn.style.color = ''; }, 2500);
+
+    // Warn if any mine rows had zero quantity (possible code mismatch)
+    const zeroRows = pushRows.filter(r => r.qty === 0 && !mines.find(m => m.label === r.label && (m.isTotal || m.isGrandTotal)));
+    if (zeroRows.length > 0) {
+      const zeroLabels = zeroRows.map(r => r.label).join(', ');
+      setTimeout(() => alert('⚠️ These mines pushed with 0 tonnes:\n' + zeroLabels + '\n\nPossible causes:\n• Colliery code in Settings doesn\'t match DO database\n• No DOs found for this mine in the uploaded XLS'), 300);
+    }
 
     // Auto-refresh Sheet view if it's ON — give the sheet 2s to process the push
     if (ssViewOn) setTimeout(() => fetchAndRenderGSheet(), 2000);
@@ -4403,28 +4420,9 @@ async function loadSettingsFromGitHub() {
     const data = await res.json();
     _settingsSha = data.sha;
     const parsed = JSON.parse(atob(data.content.replace(/\n/g,'')));
-    // Merge — saved config takes priority, but preserve any default mines not yet in saved config
+    // Merge — new schema takes priority
     if (parsed.slots) appSettings.slots = parsed.slots;
-    if (parsed.mines) {
-      // For each default mine, if it's missing from saved config (by label), append it
-      const savedLabels = new Set(parsed.mines.map(m => m.label));
-      const missingDefaults = appSettings.mines.filter(m => !savedLabels.has(m.label));
-      // Insert missing mines at their correct position (preserve ordering from defaults)
-      const merged = [...parsed.mines];
-      for (const def of missingDefaults) {
-        // Find the index of the mine after this one in defaults
-        const defIdx = appSettings.mines.findIndex(m => m.label === def.label);
-        // Find where to insert: after the last saved mine that appears before defIdx in defaults
-        let insertAt = merged.length;
-        for (let i = defIdx + 1; i < appSettings.mines.length; i++) {
-          const nextLabel = appSettings.mines[i].label;
-          const nextIdx = merged.findIndex(m => m.label === nextLabel);
-          if (nextIdx !== -1) { insertAt = nextIdx; break; }
-        }
-        merged.splice(insertAt, 0, def);
-      }
-      appSettings.mines = merged;
-    }
+    if (parsed.mines) appSettings.mines = parsed.mines;
     if (parsed.sheetUrl)   appSettings.sheetUrl   = parsed.sheetUrl;
     if (parsed.sheetName)  appSettings.sheetName  = parsed.sheetName;
     if (parsed.sheetRange) appSettings.sheetRange = parsed.sheetRange;
