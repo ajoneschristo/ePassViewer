@@ -1587,7 +1587,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B104-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B105-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -3559,10 +3559,11 @@ async function pushToSheet() {
     alert('Time filter (' + minsToLabel(timeFilterMins) + ') does not match any configured slot.\nConfigured slots: ' + slotLabels);
     return;
   }
-  if (timeFilterMins > nowMins) {
-    alert('Time filter (' + minsToLabel(timeFilterMins) + ') is in the future.\nCannot push future data to the sheet.');
-    return;
-  }
+  // TEMPORARILY DISABLED — re-enable when testing is complete
+  // if (timeFilterMins > nowMins) {
+  //   alert('Time filter (' + minsToLabel(timeFilterMins) + ') is in the future.\nCannot push future data to the sheet.');
+  //   return;
+  // }
   const col = activeSlot.col;
 
   // ── 4. Guard: report date must be today, data must reach filter time ──
