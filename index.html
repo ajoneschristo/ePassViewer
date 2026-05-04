@@ -3679,7 +3679,7 @@ async function pushToSheet() {
   let subtotal = 0, grandTotal = 0;
 
   for (const mine of mines) {
-    if (!mine.sheetRow) continue;
+    if (mine.sheetRow == null || mine.sheetRow === 0) continue;
     let qty = 0;
     if (mine.isGrandTotal) {
       qty = Math.round(grandTotal);
@@ -4403,9 +4403,28 @@ async function loadSettingsFromGitHub() {
     const data = await res.json();
     _settingsSha = data.sha;
     const parsed = JSON.parse(atob(data.content.replace(/\n/g,'')));
-    // Merge — new schema takes priority
+    // Merge — saved config takes priority, but preserve any default mines not yet in saved config
     if (parsed.slots) appSettings.slots = parsed.slots;
-    if (parsed.mines) appSettings.mines = parsed.mines;
+    if (parsed.mines) {
+      // For each default mine, if it's missing from saved config (by label), append it
+      const savedLabels = new Set(parsed.mines.map(m => m.label));
+      const missingDefaults = appSettings.mines.filter(m => !savedLabels.has(m.label));
+      // Insert missing mines at their correct position (preserve ordering from defaults)
+      const merged = [...parsed.mines];
+      for (const def of missingDefaults) {
+        // Find the index of the mine after this one in defaults
+        const defIdx = appSettings.mines.findIndex(m => m.label === def.label);
+        // Find where to insert: after the last saved mine that appears before defIdx in defaults
+        let insertAt = merged.length;
+        for (let i = defIdx + 1; i < appSettings.mines.length; i++) {
+          const nextLabel = appSettings.mines[i].label;
+          const nextIdx = merged.findIndex(m => m.label === nextLabel);
+          if (nextIdx !== -1) { insertAt = nextIdx; break; }
+        }
+        merged.splice(insertAt, 0, def);
+      }
+      appSettings.mines = merged;
+    }
     if (parsed.sheetUrl)   appSettings.sheetUrl   = parsed.sheetUrl;
     if (parsed.sheetName)  appSettings.sheetName  = parsed.sheetName;
     if (parsed.sheetRange) appSettings.sheetRange = parsed.sheetRange;
