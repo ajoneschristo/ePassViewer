@@ -1587,7 +1587,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B109-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B110-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -3656,29 +3656,22 @@ async function pushToSheet() {
       sheetName: appSettings.sheetName || 'Rake and Road Despatch',
     });
 
-    // Log payload to console for debugging
     console.log('[Push] Payload:', pushData);
-    console.log('[Push] Script URL:', scriptUrl);
     console.log('[Push] Row count:', pushRows.length);
 
-    // Try POST first (avoids URL length limits), fall back to GET
-    // no-cors: can't read response but Apps Script receives the request
-    try {
-      await fetch(scriptUrl, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: pushData,
-      });
-      console.log('[Push] POST sent');
-    } catch(postErr) {
-      console.warn('[Push] POST failed, trying GET:', postErr);
-      await fetch(scriptUrl + '?data=' + encodeURIComponent(pushData), {
-        method: 'GET',
-        mode: 'no-cors',
-      });
-      console.log('[Push] GET sent');
-    }
+    const url = scriptUrl + '?data=' + encodeURIComponent(pushData);
+    console.log('[Push] URL length:', url.length);
+
+    // Use Image ping — browser follows 302 redirects natively (Apps Script always redirects)
+    // fetch with no-cors drops the redirect; iframe fires onload on the 302 not the final response
+    // Image.src is the only reliable fire-and-forget that follows redirects cross-origin
+    await new Promise((resolve) => {
+      const img = new Image();
+      const timer = setTimeout(resolve, 10000); // 10s timeout
+      img.onload = img.onerror = () => { clearTimeout(timer); resolve(); };
+      img.src = url;
+      console.log('[Push] Image ping fired');
+    });
 
     btn.innerHTML = '✓ Done';
     btn.style.color = '#0f9d58';
