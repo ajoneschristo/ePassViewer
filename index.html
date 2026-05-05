@@ -1587,7 +1587,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B107-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B109-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -3542,6 +3542,10 @@ async function pushToSheet() {
   }
 
   // ── 3. Guard: time filter must match a configured slot ──
+  // Log which settings are active
+  console.log('[Push] Settings source: mines count =', (appSettings.mines||[]).length,
+    '| scriptUrl =', scriptUrl?.slice(0,60));
+
   const slots = appSettings.slots || [];
   const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
 
@@ -3655,13 +3659,26 @@ async function pushToSheet() {
     // Log payload to console for debugging
     console.log('[Push] Payload:', pushData);
     console.log('[Push] Script URL:', scriptUrl);
+    console.log('[Push] Row count:', pushRows.length);
 
-    // Use fetch with no-cors — fires the request reliably unlike iframe approach
-    // no-cors means we can't read the response body, but the Apps Script receives it
-    await fetch(scriptUrl + '?data=' + encodeURIComponent(pushData), {
-      method: 'GET',
-      mode: 'no-cors',
-    });
+    // Try POST first (avoids URL length limits), fall back to GET
+    // no-cors: can't read response but Apps Script receives the request
+    try {
+      await fetch(scriptUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: pushData,
+      });
+      console.log('[Push] POST sent');
+    } catch(postErr) {
+      console.warn('[Push] POST failed, trying GET:', postErr);
+      await fetch(scriptUrl + '?data=' + encodeURIComponent(pushData), {
+        method: 'GET',
+        mode: 'no-cors',
+      });
+      console.log('[Push] GET sent');
+    }
 
     btn.innerHTML = '✓ Done';
     btn.style.color = '#0f9d58';
@@ -4340,7 +4357,10 @@ async function loadSettingsFromGitHub() {
     if (parsed.sheetRange) appSettings.sheetRange = parsed.sheetRange;
     if (parsed.scriptUrl) { appSettings.scriptUrl = parsed.scriptUrl; SHEET_WEBAPP_URL = parsed.scriptUrl; }
     buildDynamicMaps(); // rebuild colliery→CF mapping from loaded settings
-  } catch(e) { /* use defaults */ }
+    console.log('[Settings] Loaded from GitHub ✓', appSettings.mines?.length, 'mines');
+  } catch(e) {
+    console.warn('[Settings] Failed to load from GitHub — using hardcoded defaults:', e.message);
+  }
 }
 
 // ── Settings Panel ───────────────────────────────────
