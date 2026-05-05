@@ -1587,7 +1587,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B110-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B111-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -3626,7 +3626,7 @@ async function pushToSheet() {
       qty = Math.round(g - t);
       subtotal += qty;
     }
-    pushRows.push({ label: mine.label, col, row: mine.sheetRow, qty, sheetName: appSettings.sheetName || 'Rake and Road Despatch' });
+    pushRows.push({ label: mine.label, row: mine.sheetRow, qty });
   }
 
   if (pushRows.length === 0) {
