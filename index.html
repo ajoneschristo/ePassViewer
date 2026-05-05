@@ -1587,7 +1587,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B111-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B112-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -3542,10 +3542,6 @@ async function pushToSheet() {
   }
 
   // ── 3. Guard: time filter must match a configured slot ──
-  // Log which settings are active
-  console.log('[Push] Settings source: mines count =', (appSettings.mines||[]).length,
-    '| scriptUrl =', scriptUrl?.slice(0,60));
-
   const slots = appSettings.slots || [];
   const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
 
@@ -3563,11 +3559,10 @@ async function pushToSheet() {
     alert('Time filter (' + minsToLabel(timeFilterMins) + ') does not match any configured slot.\nConfigured slots: ' + slotLabels);
     return;
   }
-  // TEMPORARILY DISABLED — re-enable when testing is complete
-  // if (timeFilterMins > nowMins) {
-  //   alert('Time filter (' + minsToLabel(timeFilterMins) + ') is in the future.\nCannot push future data to the sheet.');
-  //   return;
-  // }
+  if (timeFilterMins > nowMins) {
+    alert('Time filter (' + minsToLabel(timeFilterMins) + ') is in the future.\nCannot push future data to the sheet.');
+    return;
+  }
   const col = activeSlot.col;
 
   // ── 4. Guard: report date must be today, data must reach filter time ──
@@ -3576,15 +3571,15 @@ async function pushToSheet() {
     ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][today.getMonth()] +
     '-' + today.getFullYear();
 
-  // TEMPORARILY DISABLED — re-enable when testing is complete
-  // if (currentTabMaxDateStr && currentTabMaxDateStr !== todayStr) {
-  //   alert('Report date is ' + currentTabMaxDateStr + ', not today (' + todayStr + ').');
-  //   return;
-  // }
-  // if (currentTabMaxMins < timeFilterMins) {
-  //   alert('Data only available until ' + minsToLabel(currentTabMaxMins));
-  //   return;
-  // }
+  if (currentTabMaxDateStr && currentTabMaxDateStr !== todayStr) {
+    alert('Report date is ' + currentTabMaxDateStr + ', not today (' + todayStr + ').\nOnly today\'s report can be pushed to the sheet.');
+    return;
+  }
+  if (currentTabMaxMins < timeFilterMins) {
+    alert('Data is only available until ' + minsToLabel(currentTabMaxMins) +
+      ', but the time filter is set to ' + minsToLabel(timeFilterMins) + '.\n\nPlease wait for the report to update and re-upload.');
+    return;
+  }
 
   const timeslot = activeSlot.time.replace(':', '');
 
@@ -3634,16 +3629,7 @@ async function pushToSheet() {
     return;
   }
 
-  // ── Preview: show what will be pushed ──────────────────
-  const preview = pushRows
-    .map(r => `Row ${r.row}: ${r.label} → ${r.qty.toLocaleString()} T`)
-    .join('\n');
-  const confirmed = confirm(
-    `Push to sheet column ${col} (${minsToLabel(timeFilterMins)})?\n\n` +
-    preview +
-    '\n\nTap OK to confirm.'
-  );
-  if (!confirmed) return;
+
   const btn = document.getElementById('sheetPushBtn');
   const origText = btn.innerHTML;
   btn.disabled = true;
@@ -3656,11 +3642,8 @@ async function pushToSheet() {
       sheetName: appSettings.sheetName || 'Rake and Road Despatch',
     });
 
-    console.log('[Push] Payload:', pushData);
-    console.log('[Push] Row count:', pushRows.length);
 
     const url = scriptUrl + '?data=' + encodeURIComponent(pushData);
-    console.log('[Push] URL length:', url.length);
 
     // Use Image ping — browser follows 302 redirects natively (Apps Script always redirects)
     // fetch with no-cors drops the redirect; iframe fires onload on the 302 not the final response
@@ -3670,19 +3653,11 @@ async function pushToSheet() {
       const timer = setTimeout(resolve, 10000); // 10s timeout
       img.onload = img.onerror = () => { clearTimeout(timer); resolve(); };
       img.src = url;
-      console.log('[Push] Image ping fired');
     });
 
     btn.innerHTML = '✓ Done';
     btn.style.color = '#0f9d58';
     setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; btn.style.opacity = ''; btn.style.color = ''; }, 2500);
-
-    // Warn if any mine rows had zero quantity (possible code mismatch)
-    const zeroRows = pushRows.filter(r => r.qty === 0 && !mines.find(m => m.label === r.label && (m.isTotal || m.isGrandTotal)));
-    if (zeroRows.length > 0) {
-      const zeroLabels = zeroRows.map(r => r.label).join(', ');
-      setTimeout(() => alert('⚠️ These mines pushed with 0 tonnes:\n' + zeroLabels + '\n\nPossible causes:\n• Colliery code in Settings doesn\'t match DO database\n• No DOs found for this mine in the uploaded XLS'), 300);
-    }
 
     // Auto-refresh Sheet view if it's ON — give the sheet 2s to process the push
     if (ssViewOn) setTimeout(() => fetchAndRenderGSheet(), 2000);
@@ -4350,10 +4325,7 @@ async function loadSettingsFromGitHub() {
     if (parsed.sheetRange) appSettings.sheetRange = parsed.sheetRange;
     if (parsed.scriptUrl) { appSettings.scriptUrl = parsed.scriptUrl; SHEET_WEBAPP_URL = parsed.scriptUrl; }
     buildDynamicMaps(); // rebuild colliery→CF mapping from loaded settings
-    console.log('[Settings] Loaded from GitHub ✓', appSettings.mines?.length, 'mines');
-  } catch(e) {
-    console.warn('[Settings] Failed to load from GitHub — using hardcoded defaults:', e.message);
-  }
+  } catch(e) { /* use defaults */ }
 }
 
 // ── Settings Panel ───────────────────────────────────
