@@ -1789,7 +1789,7 @@ body.dark {
       <div style="display:flex;align-items:center;gap:6px;">
         <div class="area-view-wrap" onclick="toggleSpreadsheet()" title="Spreadsheet view">
           <span class="area-view-label">Sheet</span>
-          <div class="switch-track on" id="ssViewTrack">
+          <div class="switch-track" id="ssViewTrack">
             <div class="switch-thumb"></div>
           </div>
         </div>
@@ -2286,7 +2286,7 @@ let currentTabMaxDateStr = '';
 // View state
 let tripsVisible  = false;
 let areaViewOn    = false;
-let ssViewOn      = true;   // Spreadsheet view ON by default
+let ssViewOn      = false;  // Spreadsheet view OFF by default
 const gsHideEmpty = true;   // Always hide empty columns
 let lastUnknownDOs = new Set();
 
@@ -2795,6 +2795,22 @@ function expandRangeUp(range, n) {
   return `${p.startCol}${newStart}:${p.endCol}${p.endRow}`;
 }
 
+// ── Column letter ⇄ 1-based index helpers (A=1, Z=26, AA=27 …) ──
+function colLetterToIndex(letter) {
+  let n = 0;
+  for (const ch of String(letter).toUpperCase()) n = n * 26 + (ch.charCodeAt(0) - 64);
+  return n;
+}
+function indexToColLetter(n) {
+  let s = '';
+  while (n > 0) {
+    const rem = (n - 1) % 26;
+    s = String.fromCharCode(65 + rem) + s;
+    n = Math.floor((n - 1) / 26);
+  }
+  return s;
+}
+
 // ── Fetch live data from Google Sheet and render into both #ssTable and #ssTableDrop ──
 async function fetchAndRenderGSheet() {
   const statusEl     = document.getElementById('ssGSheetStatus');
@@ -2927,12 +2943,33 @@ function renderGSheetTable(dt, table, dataStartRow, fetchRange) {
     ...dataRows.map(r => (r.c || []).length)
   );
 
-  // Known column headers — fallback when sheet cells are merged/null
-  // Maps to columns I, J, K, L, M, N, O (7 columns)
-  const KNOWN_HEADERS = ['MINE', 'RDO Balance (LT)', 'Target (T)', 'till 11:00 AM (T)', 'till 1:30 PM (T)', 'till 5:30 PM (T)', 'Remarks'];
-
   // ── Determine which columns are empty (ignoring Highest rows) ──
   const remarkColIdx = numCols - 1;
+
+  // Known column headers — fallback when sheet cells are merged/null.
+  // First 3 cols (MINE / RDO Balance / Target) and the last col (Remarks) are fixed;
+  // the time columns in between are derived from the time slots configured in Settings,
+  // matched by sheet column letter, so this always reflects the current time filter setup
+  // rather than a hardcoded schedule.
+  const FIXED_HEADERS_START = ['MINE', 'RDO Balance (LT)', 'Target (T)'];
+  const fp2            = parseRange(fetchRange);
+  const startColIdx    = fp2 ? colLetterToIndex(fp2.startCol) : colLetterToIndex('I');
+  const slotsByCol     = {};
+  (appSettings.slots || []).forEach(s => {
+    if (s.col) slotsByCol[s.col.trim().toUpperCase()] = s;
+  });
+  const KNOWN_HEADERS = [];
+  for (let ci = 0; ci < numCols; ci++) {
+    if (ci < FIXED_HEADERS_START.length) {
+      KNOWN_HEADERS.push(FIXED_HEADERS_START[ci]);
+    } else if (ci === remarkColIdx) {
+      KNOWN_HEADERS.push('Remarks');
+    } else {
+      const colLetter = indexToColLetter(startColIdx + ci);
+      const slot = slotsByCol[colLetter];
+      KNOWN_HEADERS.push(slot ? `till ${slot.label || label12h(slot.time)} (T)` : '');
+    }
+  }
   gsEmptyColIndices = new Set();
   for (let ci = 0; ci < numCols; ci++) {
     if (ci === 0 || ci === remarkColIdx) continue;
@@ -2989,7 +3026,13 @@ function renderGSheetTable(dt, table, dataStartRow, fetchRange) {
       const th   = document.createElement('th');
       const cell = headerCells[ci];
       const col  = (dt.cols || [])[ci] || {};
-      const txt  = fmtGvizCell(cell) || col.label || KNOWN_HEADERS[ci] || col.id || '';
+      // For time-slot columns, the label configured in Settings always wins —
+      // so the header reflects the current time filter setup even if the sheet's
+      // own header cell text is stale, blank, or merged.
+      const isTimeSlotCol = ci >= FIXED_HEADERS_START.length && ci !== remarkColIdx && !!KNOWN_HEADERS[ci];
+      const txt = isTimeSlotCol
+        ? KNOWN_HEADERS[ci]
+        : (fmtGvizCell(cell) || col.label || KNOWN_HEADERS[ci] || col.id || '');
       th.textContent = txt;
       if (ci !== 0 && ci !== remarkColIdx) th.style.textAlign = 'right';
       htr.appendChild(th);
