@@ -690,6 +690,20 @@ body {
   gap: 0 32px;
 }
 .stt-col-full { grid-column: 1 / -1; }
+/* phones: one column, the colliery table fits the screen */
+@media (max-width: 760px) {
+  #settingsOverlay.stt-overlay { padding: 12px 8px; }
+  #settingsOverlay .stt-header { padding: 14px 14px 12px; }
+  #settingsOverlay .stt-body { grid-template-columns: minmax(0, 1fr); padding: 14px; gap: 0; }
+  #settingsOverlay .stt-body > div { min-width: 0; }
+  #settingsOverlay .stt-section[style*="height:100%"] { height: auto !important; }
+  #settingsOverlay .stt-mines-head, #settingsOverlay .stt-mine-row { grid-template-columns: 22px minmax(0,1.1fr) minmax(0,.9fr) 40px minmax(0,1.3fr) 28px; gap: 2px; padding-left: 2px; padding-right: 2px; }
+  #settingsOverlay .stt-mines-head span { padding: 7px 4px; font-size: 9px; letter-spacing: .3px; }
+  #settingsOverlay .stt-mine-row .stt-cell-input { padding: 6px 4px; font-size: 11.5px; }
+  #settingsOverlay .stt-slots-head, #settingsOverlay .stt-slot-row { grid-template-columns: 22px minmax(0,1fr) 52px minmax(0,1fr) 28px; }
+  #settingsOverlay .stt-del-btn { width: 26px; height: 26px; }
+  #settingsOverlay .stt-footer { padding-left: 14px; padding-right: 14px; }
+}
 .stt-section { margin-bottom: 20px; }
 .stt-section:last-child { margin-bottom: 0; }
 .stt-label {
@@ -791,6 +805,18 @@ body {
 .stt-mine-row:first-child { border-top: none; }
 .stt-mine-row:nth-child(even) { background: var(--bg); }
 .stt-mine-row.is-total { background: var(--amber-lo) !important; }
+.stt-mine-row.is-grand { background: var(--amber-lo) !important; }
+.stt-mine-row.is-loose { background: rgba(212,134,10,.07) !important; box-shadow: inset 3px 0 0 var(--amber); }
+.stt-mine-row.is-loose .stt-drag-handle { color: var(--amber); }
+.stt-cell-input.cf-name { font-weight: 700; color: var(--amber); }
+.stt-btn-row { display: flex; gap: 6px; }
+.stt-loose-warn {
+  display: none; margin-bottom: 8px; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid var(--amber); background: rgba(212,134,10,.08);
+  color: #9a5b00; font-size: 11.5px; line-height: 1.45;
+}
+body.dark .stt-loose-warn { color: var(--amber); }
+.stt-loose-warn.show { display: block; }
 
 /* shared input inside tables */
 .stt-cell-input {
@@ -825,6 +851,7 @@ body {
   transition: color .12s; user-select: none; flex-shrink: 0;
 }
 .stt-drag-handle:hover { color: var(--amber); }
+.stt-drag-handle { touch-action: none; }
 .stt-row-dragging {
   opacity: 0.25;
   pointer-events: none;
@@ -1206,8 +1233,23 @@ body {
 }
 .db-info { flex: 1; min-width: 0; }
 .db-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 2px; }
-.db-val   { font-family: var(--mono); font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.db-val   { font-family: var(--mono); font-size: 12px; color: var(--text); line-height: 1.4; overflow-wrap: anywhere; }
 .db-val.none { color: var(--dim); font-style: italic; }
+/* reading / saving / saved / failed — these wrap rather than trail off, so the whole message shows */
+.db-val.busy, .db-val.ok, .db-val.err, .db-val.info { white-space: pre-line; line-height: 1.45; font-family: var(--sans); font-size: 12.5px; }
+.db-line { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 22px; }
+.db-more { border: 0; background: transparent; color: var(--dim); font-family: var(--sans); font-size: 11.5px; cursor: pointer; padding: 3px 4px; white-space: nowrap; flex-shrink: 0; }
+.db-more:hover, .db-more[aria-expanded="true"] { color: var(--text); }
+.db-stats { margin-top: 4px; font-family: var(--sans); font-size: 12px; line-height: 1.5; color: var(--dim); white-space: pre-line; }
+.db-tick { flex-shrink: 0; display: inline-flex; }
+.db-line .db-val.info, .db-line .db-val.ok { color: var(--text); }
+.db-val.busy { color: var(--amber); }
+.db-val.busy::before { content: ''; display: inline-block; width: 9px; height: 9px; margin-right: 6px; border: 2px solid currentColor;
+  border-right-color: transparent; border-radius: 50%; vertical-align: -1px; animation: dbSpin .8s linear infinite; }
+@keyframes dbSpin { to { transform: rotate(360deg); } }
+.db-val.ok   { color: var(--green); }
+.db-val.err  { color: var(--red); }
+.db-upload-btn:disabled { cursor: default; }
 .db-upload-btn {
   display: flex; align-items: center; gap: 5px;
   background: none;
@@ -1239,6 +1281,16 @@ body {
   line-height: 1.5;
 }
 .unknown-banner.show { display: block; }
+/* a colliery in no coalfield — amber, not red: nothing is lost, it just needs a home */
+.unknown-banner.loose-banner { background: rgba(212,134,10,.10); border-color: var(--amber); color: #9a5b00; }
+body.dark .unknown-banner.loose-banner { color: var(--amber); }
+.area-table tr.loose-header td { color: #9a5b00 !important; }
+body.dark .area-table tr.loose-header td { color: var(--amber) !important; }
+.area-table tr.loose-row td.col-area { box-shadow: inset 3px 0 0 var(--amber); }
+/* amber dot on ⚙ while a colliery is in no coalfield */
+button.warn-dot { position: relative; }
+button.warn-dot::after { content: ''; position: absolute; top: 3px; right: 3px; width: 8px; height: 8px;
+  border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 2px var(--surface); }
 /* Area view toggle in section header */
 .area-view-wrap {
   display: flex;
@@ -1587,7 +1639,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B113-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B115-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -1624,7 +1676,8 @@ body.dark {
   <div class="db-card" style="width:100%;max-width:400px;">
     <div class="db-info">
       <div class="db-label">DO Database</div>
-      <div class="db-val none" id="dbStatusDrop">Loading…</div>
+      <div class="db-line"><span class="db-tick" id="dbIndicatorDrop" style="display:none;"></span><div class="db-val none" id="dbStatusDrop">Loading…</div><button class="db-more" id="dbMoreDrop" onclick="dbToggleStats()" style="display:none;" aria-expanded="false" aria-controls="dbStatsDrop">Stats ▾</button></div>
+      <div class="db-stats" id="dbStatsDrop" style="display:none;"></div>
     </div>
     <div style="display:flex;gap:6px;flex-shrink:0;">
       <button class="db-upload-btn" id="pasteBtnDrop" onclick="pasteFromClipboard()" style="border-color:var(--dim);color:var(--dim);">
@@ -1714,10 +1767,8 @@ body.dark {
   <div class="db-card">
     <div class="db-info">
       <div class="db-label">DO Database</div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <div class="db-val none" id="dbStatus">No database loaded — tap Update to load</div>
-        <span id="dbIndicator" style="display:none;flex-shrink:0;"></span>
-      </div>
+      <div class="db-line"><span class="db-tick" id="dbIndicator" style="display:none;"></span><div class="db-val none" id="dbStatus">Loading…</div><button class="db-more" id="dbMore" onclick="dbToggleStats()" style="display:none;" aria-expanded="false" aria-controls="dbStats">Stats ▾</button></div>
+      <div class="db-stats" id="dbStats" style="display:none;"></div>
     </div>
     <div style="display:flex;gap:6px;flex-shrink:0;">
       <button class="db-upload-btn" id="pasteBtnDash" onclick="pasteFromClipboard()" style="border-color:var(--dim);color:var(--dim);">
@@ -1774,6 +1825,7 @@ body.dark {
 
     <!-- Unknown DO banner -->
     <div class="unknown-banner" id="unknownBanner"></div>
+    <div class="unknown-banner loose-banner" id="looseBanner"></div>
 
     <!-- Data as of bar -->
     <div class="asof-bar" id="asofBar">
@@ -1896,34 +1948,134 @@ body.dark {
 //  Call buildDynamicMaps() after settings are loaded.
 // ═══════════════════════════════════════════════════════
 let dynamicCFGroups = [];   // [{ cfLabel, mines:[{label,codes[],collieryName}] }]
-let codeToMine      = {};   // collieryCode → { label, collieryName, cfLabel }
+let looseMines      = [];   // collieries in no coalfield: below the last coalfield row, or under MCL
+let codeToMine      = {};   // collieryCode → { label, collieryName, cfLabel (null when in no coalfield) }
 
+// Every colliery row belongs to the first coalfield (isTotal) row below it.
+// The MCL row (isGrandTotal) closes the coalfields: a colliery after the last
+// coalfield row, or anywhere below MCL, is in no coalfield — it counts in the
+// MCL total only, and Settings warns about it until it is moved into one.
 function buildDynamicMaps() {
   dynamicCFGroups = [];
+  looseMines      = [];
   codeToMine      = {};
   if (!appSettings || !Array.isArray(appSettings.mines)) return;
 
-  const mines = appSettings.mines;
-  let pendingMines = [];
-
-  for (const m of mines) {
-    if (m.isGrandTotal) break;
-
+  let pending = [], pastGrand = false;
+  for (const m of appSettings.mines) {
+    if (m.isGrandTotal) { pastGrand = true; looseMines.push(...pending); pending = []; continue; }
     if (m.isTotal) {
-      // All pendingMines belong to this CF
-      const group = { cfLabel: m.label, mines: pendingMines };
-      dynamicCFGroups.push(group);
-      for (const mine of pendingMines) {
-        for (const code of mine.codes) {
-          codeToMine[code] = { label: mine.label, collieryName: mine.collieryName, cfLabel: m.label };
-        }
-      }
-      pendingMines = [];
-    } else {
-      const codes = (m.colCodes || '').split(',').map(c => c.trim()).filter(Boolean);
-      pendingMines.push({ label: m.label, codes, collieryName: m.collieryName || m.label });
+      if (pastGrand) continue;          // a coalfield row below MCL closes nothing (Settings won't save one there)
+      dynamicCFGroups.push({ cfLabel: m.label, mines: pending });
+      pending = [];
+      continue;
     }
+    const codes = (m.colCodes || '').split(',').map(c => c.trim()).filter(Boolean);
+    const mine = { label: m.label, codes, collieryName: m.collieryName || m.label };
+    if (pastGrand) looseMines.push(mine); else pending.push(mine);
   }
+  looseMines.push(...pending);
+  for (const g of dynamicCFGroups)
+    for (const mine of g.mines)
+      for (const code of mine.codes) codeToMine[code] = { label: mine.label, collieryName: mine.collieryName, cfLabel: g.cfLabel };
+  for (const mine of looseMines)
+    for (const code of mine.codes) if (!codeToMine[code]) codeToMine[code] = { label: mine.label, collieryName: mine.collieryName, cfLabel: null };
+  paintLooseWarnings();
+}
+
+// ── New colliery codes: added to Settings under MCL ─────
+// A DO whose colliery code is in no Settings row puts a new row for that
+// colliery below the MCL row — here at once, and in the cloud settings file
+// (only that row is added to what is there). Settings and the report screen
+// warn until the row is moved into a coalfield.
+let _newCollCodes  = new Set();   // codes added this session (the banner calls them new)
+let _settingsReady = false;       // the cloud settings have been read (or failed to be)
+let _settingsLoaded = false;      // ...and read successfully, so they may be written back
+
+function decodeEnt(s) {
+  return String(s || '')
+    .replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"').replace(/&#0?39;/g, "'").replace(/&nbsp;/gi, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
+function codesOf(m) { return String((m && m.colCodes) || '').split(',').map(c => c.trim()).filter(Boolean); }
+
+// found: { collieryCode: name from the DO list }
+function addNewCollieries(found) {
+  const fresh = Object.keys(found).filter(c => !codeToMine[c]);
+  if (!fresh.length) return;
+  const rows = fresh.sort().map(code => {
+    const name = decodeEnt(found[code]) || code;
+    return { label: name.split(',')[0].trim() || name, colCodes: code, sheetRow: 0, collieryName: name };
+  });
+  fresh.forEach(c => _newCollCodes.add(c));
+  appSettings.mines = (appSettings.mines || []).concat(rows);
+  // an open Settings panel gets them too, below what's being edited
+  if (_minesDraft && document.getElementById('settingsOverlay').style.display === 'block') {
+    syncMinesDraft(); _minesDraft.push(...rows.map(r => Object.assign({}, r))); renderMinesTable();
+  }
+  buildDynamicMaps();
+  if (_settingsLoaded) saveNewCollieriesToCloud(rows);
+}
+
+async function saveNewCollieriesToCloud(rows) {
+  const url = `${SETTINGS_GH.api}/repos/${SETTINGS_GH.owner}/${SETTINGS_GH.repo}/contents/${SETTINGS_GH.path}`;
+  const auth = { Authorization: 'token ' + SETTINGS_GH.token, Accept: 'application/vnd.github.v3+json' };
+  try {
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const res = await fetch(`${url}?ref=${SETTINGS_GH.branch}&t=${Date.now()}`, { headers: auth });
+      if (!res.ok) return;
+      const data = await res.json();
+      const parsed = JSON.parse(b64ToText(data.content));
+      if (!Array.isArray(parsed.mines)) return;          // never build a colliery list from scratch here
+      const have = new Set(parsed.mines.flatMap(codesOf));
+      const add = rows.filter(r => !codesOf(r).some(c => have.has(c)));
+      if (!add.length) { _settingsSha = data.sha; return; }
+      parsed.mines = parsed.mines.concat(add);
+      const put = await fetch(url, {
+        method: 'PUT', headers: { ...auth, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'New colliery ' + add.map(r => r.colCodes).join(', ') + ' added under MCL',
+                               content: textToB64(JSON.stringify(parsed, null, 2)), branch: SETTINGS_GH.branch, sha: data.sha }),
+      });
+      if (put.ok) { _settingsSha = (await put.json()).content.sha; return; }
+      if (put.status !== 409 && put.status !== 422) return;
+    }
+  } catch (e) { console.warn('Could not add the new colliery to the cloud settings:', e); }
+}
+
+// settings file text ⇄ base64, UTF-8 safe (the file may hold other apps' non-ASCII text)
+function b64ToText(b64) {
+  const bin = atob(String(b64 || '').replace(/\s/g, ''));
+  return new TextDecoder().decode(Uint8Array.from(bin, ch => ch.charCodeAt(0)));
+}
+function textToB64(text) {
+  const bytes = new TextEncoder().encode(text);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
+// "Siarmal OCP (5162), …" for the collieries in no coalfield
+function looseNames() {
+  return looseMines.map(m => `${m.collieryName || m.label}${m.codes.length ? ' (' + m.codes.join(', ') + ')' : ''}`).join(', ');
+}
+// the report-screen banner and the dot on ⚙
+function paintLooseWarnings() {
+  const n = looseMines.length;
+  document.querySelectorAll('button[onclick="openSettings()"]').forEach(b => {
+    b.classList.toggle('warn-dot', n > 0);
+    b.title = n ? `Settings — ${n} colliery${n === 1 ? '' : ' rows'} in no coalfield` : 'Settings';
+  });
+  const ban = document.getElementById('looseBanner');
+  if (!ban) return;
+  if (!n) { ban.className = 'unknown-banner loose-banner'; ban.onclick = null; return; }
+  const isNew = looseMines.some(m => m.codes.some(c => _newCollCodes.has(c)));
+  ban.innerHTML = (isNew ? `⚠ New colliery found: ${looseNames()} — added to Settings under MCL.`
+                         : `⚠ Not in any coalfield: ${looseNames()}.`)
+    + ` It counts in MCL but in no coalfield total. <strong>Tap to put it in a coalfield.</strong>`;
+  ban.className = 'unknown-banner loose-banner show';
+  ban.style.cursor = 'pointer';
+  ban.onclick = openSettings;
 }
 
 const GH = {
@@ -1949,30 +2101,103 @@ let mclhoDB   = {};
 let mclhoCount = 0;
 let _ghSha    = null; // current file SHA (needed for GitHub PUT)
 
+const DB_MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let _dbUpdated  = '';     // when the cloud copy was last written (ISO), from the file
+let _dbBusy     = false;  // a paste or upload is being read or saved
+let _dbKind     = '';     // what the status line shows now: busy | ok | err | none | info
+let _dbUnknown  = 0;      // DOs in the loaded despatch file that the database doesn't have
+let _dbNote     = '';     // the last paste/save's own figures, first line of the stats
+let _dbStatsOpen = false;
+
+// One status line on both DO Database cards — the landing page's and the
+// report screen's. It holds only the mark (tick or warning) and a word or two;
+// the figures — what the last save added, DOs by year, when the cloud copy was
+// saved — wait behind Stats, on both cards at once.
+//   kind:  busy | ok | err | none | info     retry: makes the line tappable
+//   note:  figures of this paste or save, shown first in the stats
+function dbSay(text, kind, retry, note) {
+  _dbKind = kind || '';
+  _dbNote = note || '';
+  ['dbStatus', 'dbStatusDrop'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'db-val' + (kind ? ' ' + kind : '');
+    el.title = text;
+    el.style.display = text ? '' : 'none';
+    el.style.cursor = retry ? 'pointer' : '';
+    el.onclick = retry ? () => { el.onclick = null; retry(); } : null;
+    el.setAttribute('role', 'status');
+  });
+  dbTick();
+}
+function dbToggleStats() { _dbStatsOpen = !_dbStatsOpen; dbStatsPaint(); }
+function dbStatsPaint() {
+  // figures are there to show once the database is in, and after a failed save (its reason)
+  const has = (mclhoCount > 0 && (_dbKind === 'info' || _dbKind === 'ok')) || (_dbKind === 'err' && !!_dbNote);
+  let lines = '';
+  if (has && _dbStatsOpen) {
+    const L = [];
+    if (_dbNote) L.push(_dbNote);
+    if (_dbKind !== 'err') {
+      if (_dbUnknown > 0 && allRows.length) L.push(`${_dbUnknown.toLocaleString('en-IN')} DO${_dbUnknown === 1 ? '' : 's'} in this file aren’t in the database`);
+      L.push(dbYearLine());
+    }
+    lines = L.join('\n');
+  }
+  [['dbMore', 'dbStats'], ['dbMoreDrop', 'dbStatsDrop']].forEach(([b, p]) => {
+    const btn = document.getElementById(b), box = document.getElementById(p);
+    if (!btn || !box) return;
+    btn.style.display = has ? '' : 'none';
+    btn.textContent = _dbStatsOpen ? 'Hide stats ▴' : 'Stats ▾';
+    btn.setAttribute('aria-expanded', String(has && _dbStatsOpen));
+    box.textContent = lines;
+    box.style.display = lines ? '' : 'none';
+  });
+}
+// The mark before the status: a green tick when the database is loaded and
+// every DO in the loaded file is in it; a red warning when some aren't.
+// Hidden while reading or saving, and when a save failed.
+function dbTick() {
+  const show = (_dbKind === 'info' || _dbKind === 'ok') && mclhoCount > 0;
+  const bad = _dbUnknown > 0 && allRows.length > 0;
+  const svg = bad
+    ? `<svg width="18" height="18" fill="none" stroke="var(--red)" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>`
+    : `<svg width="18" height="18" fill="none" stroke="var(--green)" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>`;
+  const title = bad ? `${_dbUnknown} DO${_dbUnknown === 1 ? '' : 's'} in this file aren’t in the DO database — paste or upload the latest list`
+                    : 'DO database loaded — every DO is known';
+  ['dbIndicator', 'dbIndicatorDrop'].forEach(id => {
+    const ind = document.getElementById(id);
+    if (!ind) return;
+    ind.style.display = show ? 'inline-flex' : 'none';
+    ind.innerHTML = svg; ind.title = title;
+    ind.setAttribute('role', 'img'); ind.setAttribute('aria-label', title);
+  });
+  dbStatsPaint();
+}
+function dbButtons(busy) {
+  document.querySelectorAll('.db-upload-btn').forEach(b => { b.disabled = busy; b.style.opacity = busy ? '.45' : ''; });
+}
+function dbWhen(iso) {
+  const d = iso ? new Date(iso) : null;
+  if (!d || isNaN(d)) return '';
+  const t = d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
+  return d.toDateString() === new Date().toDateString() ? 'today ' + t : `${d.getDate()} ${DB_MON[d.getMonth()]} ${d.getFullYear()}, ${t}`;
+}
+
 function updateDbStatus(syncing) {
-  const el = document.getElementById('dbStatus');
-  const elDrop = document.getElementById('dbStatusDrop');
-  el.style.cursor = ''; el.onclick = null;
-  if (syncing) {
-    el.textContent = 'Loading database…'; el.className = 'db-val';
-    if (elDrop) { elDrop.textContent = 'Loading…'; elDrop.className = 'db-val'; }
-    return;
-  }
-  if (mclhoCount === 0) {
-    el.textContent = 'No database loaded — tap Update to load'; el.className = 'db-val none';
-    if (elDrop) { elDrop.textContent = 'No database loaded'; elDrop.className = 'db-val none'; }
-  } else {
-    el.textContent = 'DO Database loaded'; el.className = 'db-val';
-    if (elDrop) { elDrop.textContent = 'DO Database loaded'; elDrop.className = 'db-val'; }
-  }
+  if (syncing) { dbSay('Loading database…', ''); return; }
+  if (mclhoCount === 0) dbSay('No database loaded — tap Upload or Paste', 'none');
+  else dbSay('', 'info');
 }
 
 async function pasteFromClipboard() {
   try {
     if (!navigator.clipboard || !navigator.clipboard.readText) {
-      alert('Clipboard access not supported on this browser.\nUse the Update button to upload the mclho file instead.');
+      alert('Clipboard access not supported on this browser.\nUse the Upload button to upload the mclho file instead.');
       return;
     }
+    if (_dbBusy) return;
     const text = await navigator.clipboard.readText();
     if (!text || text.length < 100) {
       alert('Clipboard content is too small or empty.\nPlease select all (Ctrl+A) and copy (Ctrl+C) the full mclho page in your browser first.');
@@ -1993,24 +2218,8 @@ async function pasteFromClipboard() {
 }
 
 function updateDbIndicator(unknownCount) {
-  const ind = document.getElementById('dbIndicator');
-  if (mclhoCount === 0 || allRows.length === 0) {
-    ind.style.display = 'none';
-    return;
-  }
-  ind.style.display = 'inline-flex';
-  ind.style.alignItems = 'center';
-  if (unknownCount === 0) {
-    ind.innerHTML = `<svg width="18" height="18" fill="none" stroke="var(--green)" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-    </svg>`;
-    ind.title = 'DO Database up to date';
-  } else {
-    ind.innerHTML = `<svg width="18" height="18" fill="none" stroke="var(--red)" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-    </svg>`;
-    ind.title = 'DO Database outdated — tap Update';
-  }
+  _dbUnknown = unknownCount || 0;
+  dbTick();
 }
 
 // ── Load DB from GitHub on startup ──────────────────────
@@ -2026,8 +2235,9 @@ async function loadDbFromGitHub() {
         { headers }
       );
       if (metaRes.status === 404) {
-        _ghSha = null; mclhoDB = {}; mclhoCount = 0;
-        updateDbStatus(false); return;
+        _ghSha = null; mclhoDB = {}; mclhoCount = 0; _dbUpdated = '';
+        if (!_dbBusy) updateDbStatus(false);
+        return;
       }
       if (!metaRes.ok) throw new Error(`Metadata fetch failed: ${metaRes.status}`);
       const meta = await metaRes.json();
@@ -2042,102 +2252,177 @@ async function loadDbFromGitHub() {
       const json = await blobRes.json();
       mclhoDB    = json.db || {};
       mclhoCount = Object.keys(mclhoDB).length;
-      updateDbStatus(false);
+      _dbUpdated = json.updated || '';
+      if (!_dbBusy) updateDbStatus(false);
       // If despatch already loaded, re-run stats with restored DB
       if (allRows.length > 0) updateStats();
       return; // success — exit
     } catch(e) {
       console.warn(`DB load attempt ${attempt} failed:`, e);
       if (attempt < 3) {
-        updateDbStatus(true); // keep showing syncing
+        if (!_dbBusy) updateDbStatus(true); // keep showing syncing
         await new Promise(r => setTimeout(r, 2000 * attempt)); // wait 2s, 4s
-      } else {
+      } else if (!_dbBusy) {
         // All retries failed — show a tap-to-retry message
-        const el = document.getElementById('dbStatus');
-        el.textContent = 'Could not load database — tap to retry';
-        el.className = 'db-val none';
-        el.style.cursor = 'pointer';
-        el.onclick = () => { el.onclick = null; el.style.cursor = ''; loadDbFromGitHub(); };
+        dbSay('Could not load database — tap to retry', 'err', loadDbFromGitHub);
       }
     }
   }
 }
 
-// ── Save DB to GitHub after update ─────────────────────
-async function saveDbToGitHub() {
-  const btn = document.getElementById('dbUpdateBtn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+// ── Save DB to GitHub after a paste or upload ──────────
+// Says what is happening on both cards.
+//   ch = { recs: { doNumber: record } added or changed by this paste/upload, added, updated }
+// The cloud copy is checked first: when Road Power Report or another phone has
+// saved since this page loaded it, this paste's records are laid over that
+// newer copy instead of overwriting it with the older one held here.
+async function saveDbToGitHub(ch) {
+  ch = ch || { recs: {}, added: 0, updated: 0 };
+  const what = dbWhat(ch);
+  _dbBusy = true; dbButtons(true);
+  dbSay('Saving to cloud…', 'busy');
+  const auth = { 'Authorization': `token ${GH.token}`, 'Accept': 'application/vnd.github.v3+json' };
+  const url = `${GH.api}/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
+  let merged = false;
   try {
-    const content = btoa(unescape(encodeURIComponent(
-      JSON.stringify({ db: mclhoDB, updated: new Date().toISOString() })
-    )));
-    const body = {
-      message: `Update mclho DB — ${new Date().toISOString().slice(0,10)}`,
-      content,
-      branch: GH.branch,
-    };
-    if (_ghSha) body.sha = _ghSha;
-
-    const url = `${GH.api}/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
-    const res = await fetch(url, {
-      method:  'PUT',
-      headers: {
-        'Authorization': `token ${GH.token}`,
-        'Accept':        'application/vnd.github.v3+json',
-        'Content-Type':  'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-
-    const result = await res.json();
-
-    if (!res.ok) {
-      // If SHA conflict (422), re-fetch SHA and retry once
-      if (res.status === 422) {
-        const refetch = await fetch(
-          `${GH.api}/repos/${GH.owner}/${GH.repo}/contents/${GH.path}?ref=${GH.branch}`,
-          { headers: { 'Authorization': `token ${GH.token}`, 'Accept': 'application/vnd.github.v3+json' } }
-        );
-        if (refetch.ok) {
-          const refetchData = await refetch.json();
-          _ghSha = refetchData.sha;
-          body.sha = _ghSha;
-          const retry = await fetch(url, {
-            method: 'PUT',
-            headers: {
-              'Authorization': `token ${GH.token}`,
-              'Accept':        'application/vnd.github.v3+json',
-              'Content-Type':  'application/json',
-            },
-            body: JSON.stringify(body),
-          });
-          const retryResult = await retry.json();
-          if (!retry.ok) throw new Error(`${retry.status}: ${retryResult.message}`);
-          _ghSha = retryResult.content.sha;
-          return;
-        }
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const metaRes = await fetch(`${url}?ref=${GH.branch}&t=${Date.now()}`, { headers: auth });
+      if (!metaRes.ok && metaRes.status !== 404) throw new Error(`the cloud copy couldn't be checked (${metaRes.status})`);
+      const sha = metaRes.ok ? (await metaRes.json()).sha : null;
+      if (sha && sha !== _ghSha) {
+        dbSay('Saving to cloud… fetching the newer cloud copy first', 'busy');
+        const blobRes = await fetch(`${GH.api}/repos/${GH.owner}/${GH.repo}/git/blobs/${sha}`,
+                                    { headers: { ...auth, 'Accept': 'application/vnd.github.v3.raw' } });
+        if (!blobRes.ok) throw new Error(`the newer cloud copy couldn't be read (${blobRes.status})`);
+        const base = (await blobRes.json()).db || {};
+        for (const k in ch.recs) base[k] = ch.recs[k];
+        dbGrades(base);
+        mclhoDB = base; mclhoCount = Object.keys(mclhoDB).length;
+        _ghSha = sha; merged = true;
+        dbSay('Saving to cloud…', 'busy');
       }
-      throw new Error(`${res.status}: ${result.message}`);
+      dbGrades(mclhoDB);
+      const stamp = new Date().toISOString();
+      const body = {
+        message: `Update mclho DB — ${stamp.slice(0,10)}`,
+        content: btoa(unescape(encodeURIComponent(JSON.stringify({ db: mclhoDB, updated: stamp })))),
+        branch:  GH.branch,
+      };
+      if (sha) body.sha = sha;
+      const res = await fetch(url, { method: 'PUT', headers: { ...auth, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const result = await res.json().catch(() => ({}));
+      if (res.ok) {
+        _ghSha = result.content && result.content.sha;
+        _dbUpdated = stamp;
+        dbSay('Saved', 'ok', null, what.charAt(0).toUpperCase() + what.slice(1) + (merged ? ' · added to a newer cloud copy' : ''));
+        return true;
+      }
+      // saved by someone else in the meantime: check again and go round
+      if ((res.status === 409 || res.status === 422) && attempt < 3) continue;
+      throw new Error(`${res.status}${result.message ? ': ' + result.message : ''}`);
     }
-    _ghSha = result.content.sha;
-  } catch(e) {
-    alert(`Could not save to cloud: ${e.message}\nData is still in memory for this session.`);
+  } catch (e) {
+    dbSay('⚠ Not saved — tap to try again', 'err', () => saveDbToGitHub(ch),
+          `The cloud said: ${e.message || e}. The DOs are kept for this session.`);
+    return false;
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Upload'; }
+    _dbBusy = false; dbButtons(false);
   }
+}
+
+// The i3MS list gives a GCV band where a grade is meant. Saved DOs carry the
+// grade instead: the band's middle falls in one grade's GCV range (kcal/kg),
+// and GCV 1500–1899 and BG2 both become Rejects. A grade already (G10) stays.
+// Same rule as Road Power Report, so both apps write the shared list alike.
+const DB_GCV_GRADES = [   // [lowest GCV, grade]
+  [7001, 'G1'], [6701, 'G2'], [6401, 'G3'], [6101, 'G4'], [5801, 'G5'], [5501, 'G6'], [5201, 'G7'], [4901, 'G8'],
+  [4601, 'G9'], [4301, 'G10'], [4001, 'G11'], [3701, 'G12'], [3401, 'G13'], [3101, 'G14'], [2801, 'G15'], [2501, 'G16'], [2201, 'G17'],
+];
+function dbGradeOf(raw) {
+  const s = String(raw == null ? '' : raw).trim();
+  if (!s) return s;
+  if (/^b\.?\s*g\.?\s*-?\s*2$/i.test(s)) return 'Rejects';
+  if (/^rejects?$/i.test(s)) return 'Rejects';
+  const g = /^(?:grade\s*)?g\s*-?\s*(\d{1,2})\b/i.exec(s);
+  if (g && +g[1] >= 1 && +g[1] <= 17) return 'G' + +g[1];
+  const n = s.match(/\d{3,5}/g);
+  if (!n) return s;
+  const lo = +n[0], hi = +(n[1] || n[0]);
+  const mid = n.length === 1 && /^(>|above|over)/i.test(s) ? lo + 1 : (lo + hi) / 2;     // '>7000' is G1
+  if (mid >= 1500 && mid <= 1899.99) return 'Rejects';
+  const band = DB_GCV_GRADES.find(b => mid >= b[0]);
+  return band && mid <= 99999 ? band[1] : s;
+}
+// every saved DO's grade put right; answers how many changed
+function dbGrades(db) {
+  let n = 0;
+  for (const k in db) {
+    const r = db[k];
+    if (!r || r.grade == null) continue;
+    const g = dbGradeOf(r.grade);
+    if (g !== r.grade) { db[k] = Object.assign({}, r, { grade: g }); n++; }
+  }
+  return n;
+}
+// a DO date ('15-Apr-2026', '15/04/2026', '2026-04-15') as 20260415
+function dbDateKey(v) {
+  v = String(v || '').trim();
+  let m = /^(\d{1,2})[-\/. ]([A-Za-z]{3})[A-Za-z]*[-\/. ](\d{4})/.exec(v);
+  if (m) { const i = DB_MON.findIndex(x => x.toLowerCase() === m[2].toLowerCase()); if (i >= 0) return +m[3] * 10000 + (i + 1) * 100 + +m[1]; }
+  if ((m = /^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/.exec(v))) return +m[3] * 10000 + +m[2] * 100 + +m[1];
+  if ((m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v))) return +m[1] * 10000 + +m[2] * 100 + +m[3];
+  return null;
+}
+// DOs counted by the year of their DO date: '2025: 12,345 DOs · 2026: 17,680 DOs'
+function dbYears(db) {
+  const by = {}; let undated = 0;
+  for (const k in db) {
+    const key = dbDateKey((db[k] || {}).doDate);
+    if (key) { const y = Math.floor(key / 10000); by[y] = (by[y] || 0) + 1; } else undated++;
+  }
+  const parts = Object.keys(by).sort().map(y => `${y}: ${by[y].toLocaleString('en-IN')} DOs`);
+  if (undated) parts.push(`no date: ${undated.toLocaleString('en-IN')} DOs`);
+  return parts.join(' · ') || 'none';
+}
+// DOs by year and, under it, when the cloud copy was saved
+function dbYearLine() {
+  const when = dbWhen(_dbUpdated);
+  return dbYears(mclhoDB) + (when ? `\nUpdated ${when}` : '');
+}
+// '25 new DOs · existing DOs updated'
+function dbWhat(ch) {
+  const nw = ch.added ? `${ch.added.toLocaleString('en-IN')} new DO${ch.added === 1 ? '' : 's'}` : 'no new DOs';
+  return nw + (ch.updated ? ' · existing DOs updated' : '');
+}
+// a problem reading a paste or upload: put the status back, then say why
+function dbFail(msg) {
+  _dbBusy = false; dbButtons(false);
+  updateDbStatus(false);
+  alert(msg);
 }
 
 // ── mclho MHTML parser ──────────────────────────────────
 document.getElementById('mclhoInput').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
+  const f = e.target.files[0];
+  if (!f) return;
+  if (_dbBusy) { e.target.value = ''; return; }
+  const r = new FileReader();
+  dbSay(`Reading ${f.name}…`, 'busy');
+  r.onload = ev => parseMclho(ev.target.result);
+  r.onerror = () => dbFail(`Could not read ${f.name}.`);
+  r.readAsText(f);
   e.target.value = '';
-  const reader = new FileReader();
-  reader.onload = ev => parseMclho(ev.target.result);
-  reader.readAsText(file);
 });
 
 async function parseMclho(raw) {
+  try { await readMclho(raw); }
+  catch (e) { dbFail('Could not read the DO list: ' + (e.message || e)); }
+}
+async function readMclho(raw) {
+  if (_dbBusy) return;
+  _dbBusy = true; dbButtons(true);
+  dbSay('Reading the DO list…', 'busy');
+  await new Promise(r => setTimeout(r, 30));     // let the status paint before the heavy parse
   // ── Step 1: Determine if input is MHTML or plain HTML/text ────────────
   const isMhtml = raw.includes('MIME-Version:') || raw.includes('Content-Type: multipart/');
 
@@ -2150,15 +2435,15 @@ async function parseMclho(raw) {
     }
     const decoded = decodeQP(raw);
     const tableStart = decoded.indexOf('DO Number');
-    if (tableStart < 0) { alert('DO Number column not found in mclho file.'); return; }
+    if (tableStart < 0) { dbFail('DO Number column not found in mclho file.'); return; }
     const tableTagIdx = decoded.lastIndexOf('<table', tableStart);
     const tableEndIdx = decoded.indexOf('</table>', tableStart);
-    if (tableTagIdx < 0 || tableEndIdx < 0) { alert('Could not locate data table in mclho file.'); return; }
+    if (tableTagIdx < 0 || tableEndIdx < 0) { dbFail('Could not locate data table in mclho file.'); return; }
     tableHTML = decoded.slice(tableTagIdx, tableEndIdx + 8);
   } else {
     // ── Plain text/HTML path (clipboard) ────────────────────────────
     const tableStart = raw.indexOf('DO Number');
-    if (tableStart < 0) { alert('DO Number column not found in clipboard content.'); return; }
+    if (tableStart < 0) { dbFail('DO Number column not found in clipboard content.'); return; }
     const tableTagIdx = raw.lastIndexOf('<table', tableStart);
     const tableEndIdx = raw.indexOf('</table>', tableStart);
     if (tableTagIdx >= 0 && tableEndIdx >= 0) {
@@ -2169,11 +2454,9 @@ async function parseMclho(raw) {
       const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l);
       // Find header row containing 'DO Number' or 'Sl No'
       const hdrIdx = lines.findIndex(l => l.includes('DO Number') || (l.includes('Sl') && l.includes('Unique')));
-      if (hdrIdx < 0) { alert('Could not find column headers in clipboard.'); return; }
+      if (hdrIdx < 0) { dbFail('Could not find column headers in clipboard.'); return; }
       let fakeTable = '<table>';
-      // Header
       fakeTable += '<tr>' + lines[hdrIdx].split('\t').map(h => `<th>${h}</th>`).join('') + '</tr>';
-      // Data rows
       for (let i = hdrIdx + 1; i < lines.length; i++) {
         const cols = lines[i].split('\t');
         if (cols.length < 5) continue;
@@ -2201,7 +2484,7 @@ async function parseMclho(raw) {
   for (const row of rows) {
     const tds = row.querySelectorAll('td');
     if (tds.length < 13) continue;
-    const cells = [...tds].map(td => td.textContent.trim().replace(/\u00a0/g, '').trim());
+    const cells = [...tds].map(td => td.textContent.trim().replace(/ /g, '').trim());
     if (!cells[0] || !/^\d+$/.test(cells[0])) continue; // skip non-data rows
     const slNo = parseInt(cells[0]);
     const doNum = cells[2];
@@ -2213,7 +2496,7 @@ async function parseMclho(raw) {
       partyName:    cells[6],
       collieryCode: cells[7],
       collieryName: cells[8],
-      grade:        cells[9],
+      grade:        dbGradeOf(cells[9]),
       size:         cells[10],
       doStartDate:  cells[11],
       doEndDate:    cells[12],
@@ -2225,29 +2508,38 @@ async function parseMclho(raw) {
     parsed++;
   }
 
-  if (parsed === 0) { alert('No DO data rows found. Please check the source and try again.'); return; }
+  if (parsed === 0) { dbFail('No DO data rows found. Please check the source and try again.'); return; }
 
   // Second pass: merge into mclhoDB
-  let added = 0, updated = 0, unchanged = 0;
+  let added = 0, updated = 0;
+  const recs = {};
   for (const doNum in incoming) {
     const newRec = incoming[doNum].record;
     if (!mclhoDB[doNum]) {
-      mclhoDB[doNum] = newRec;
+      mclhoDB[doNum] = newRec; recs[doNum] = newRec;
       added++;
     } else {
-      // Check for any changes
       const existing = mclhoDB[doNum];
       const changed = Object.keys(newRec).some(k => newRec[k] !== existing[k]);
-      if (changed) { mclhoDB[doNum] = newRec; updated++; }
-      else unchanged++;
+      if (changed) { mclhoDB[doNum] = newRec; recs[doNum] = newRec; updated++; }
     }
   }
 
   mclhoCount = Object.keys(mclhoDB).length;
-  updateDbStatus(false);
+  const n = Object.keys(incoming).length;
+  // saved DOs still holding a GCV band get their grade too
+  const regraded = dbGrades(mclhoDB);
+
+  if (!added && !updated && !regraded) {
+    // nothing new: no need to write the cloud copy again
+    _dbBusy = false; dbButtons(false);
+    dbSay('Up to date', 'ok', null, `Nothing new in the ${n.toLocaleString('en-IN')} DOs read`);
+    return;
+  }
 
   // Save merged DB to GitHub cloud
-  await saveDbToGitHub();
+  _dbBusy = false;
+  await saveDbToGitHub({ recs, added, updated: updated + regraded });
 
   // Re-run stats if despatch data is already loaded
   if (allRows.length > 0) updateStats();
@@ -2546,6 +2838,7 @@ function updateStats() {
   const colAcc  = {};  // collieryCode → { g, t, trips }
   let unknownG = 0, unknownT = 0, unknownTrips = 0;
   const unknownDOs = new Set();
+  const newCodes = {};  // collieryCode → name, for codes Settings doesn't have
 
   function accCol(code, g, t) {
     if (!colAcc[code]) colAcc[code] = { g: 0, t: 0, trips: 0 };
@@ -2564,16 +2857,19 @@ function updateStats() {
       unknownG += g; unknownT += t; unknownTrips++;
       if (doNum) unknownDOs.add(doNum);
     } else {
-      const colCode = mclhoDB[doNum].collieryCode;
-      if (codeToMine[colCode]) {
-        accCol(colCode, g, t);
-      } else {
-        // Colliery code not in settings — count as unknown
+      const colCode = String(mclhoDB[doNum].collieryCode || '').trim();
+      if (!colCode) {
+        // DO is known but carries no colliery code
         unknownG += g; unknownT += t; unknownTrips++;
-        unknownDOs.add(doNum);
+      } else {
+        accCol(colCode, g, t);
+        if (!codeToMine[colCode]) newCodes[colCode] = mclhoDB[doNum].collieryName || colCode;
       }
     }
   }
+
+  // Colliery codes no Settings row has: added under MCL (once the settings are read)
+  if (_settingsReady && Object.keys(newCodes).length) addNewCollieries(newCodes);
 
   // Unknown DO banner
   const banner = document.getElementById('unknownBanner');
@@ -2685,6 +2981,20 @@ function renderAreaTable(colAcc, unknownG, unknownT, unknownTrips) {
     const cfNet = cfG - cfT;
     mclG += cfG; mclT += cfT; mclTrips += cfTrips;
     addRow('cf-total', [group.cfLabel + ' Total', cfTrips.toLocaleString(), fmt(cfNet)]);
+  }
+
+  // Collieries in no coalfield: counted in MCL only, until Settings puts them in one
+  if (looseMines.length) {
+    addRow('cf-header loose-header', ['⚠ Not in any coalfield', '', '']);
+    for (const mine of looseMines) {
+      let mG = 0, mT = 0, mTrips = 0;
+      for (const code of mine.codes) {
+        const acc = colAcc[code];
+        if (acc) { mG += acc.g; mT += acc.t; mTrips += acc.trips; }
+      }
+      mclG += mG; mclT += mT; mclTrips += mTrips;
+      addRow('loose-row' + (mG - mT === 0 ? ' zero-row' : ''), [mine.collieryName, mTrips.toLocaleString(), fmt(mG - mT)]);
+    }
   }
 
     // Unknown row (if any)
@@ -3642,31 +3952,30 @@ async function pushToSheet() {
   }
 
   // ── 6. Build pushRows from settings.mines ───────────
+  // Every colliery row counts, with or without a sheet row of its own: a coalfield
+  // row sums the collieries above it, and MCL sums every colliery listed —
+  // those in no coalfield included. Only rows with a row number are written.
   const mines = appSettings.mines || [];
   const pushRows = [];
-  let subtotal = 0, grandTotal = 0;
-
-  for (const mine of mines) {
-    if (!mine.sheetRow) continue;
-    let qty = 0;
-    if (mine.isGrandTotal) {
-      qty = Math.round(grandTotal);
-    } else if (mine.isTotal) {
-      qty = Math.round(subtotal);
-      grandTotal += subtotal;
-      subtotal = 0;
-    } else {
-      const codes = (mine.colCodes || '').split(',').map(c => c.trim()).filter(Boolean);
-      let g = 0, t = 0;
-      for (const code of codes) {
-        const acc = colAcc[code];
-        if (acc) { g += acc.g; t += acc.t; }
-      }
-      qty = Math.round(g - t);
-      subtotal += qty;
+  const qtys = mines.map(mine => {
+    if (mine.isTotal || mine.isGrandTotal) return 0;
+    let g = 0, t = 0;
+    for (const code of codesOf(mine)) {
+      const acc = colAcc[code];
+      if (acc) { g += acc.g; t += acc.t; }
     }
-    pushRows.push({ label: mine.label, row: mine.sheetRow, qty });
-  }
+    return Math.round(g - t);
+  });
+  const grandTotal = qtys.reduce((a, b) => a + b, 0);
+  let subtotal = 0, pastGrand = false;
+
+  mines.forEach((mine, i) => {
+    let qty;
+    if (mine.isGrandTotal) { qty = grandTotal; pastGrand = true; }
+    else if (mine.isTotal) { qty = pastGrand ? 0 : subtotal; subtotal = 0; }
+    else { qty = qtys[i]; if (!pastGrand) subtotal += qty; }
+    if (mine.sheetRow > 0) pushRows.push({ label: mine.label, row: mine.sheetRow, qty });
+  });
 
   if (pushRows.length === 0) {
     alert('No rows configured.\nPlease open Settings (⚙) and configure the mines/rows.');
@@ -4226,14 +4535,20 @@ function label12h(hhmm) {
 //  DRAG-AND-DROP ROW REORDERING (live flow animation)
 // ═══════════════════════════════════════════════════════
 let _dragRow = null, _dragType = null, _dragGhost = null;
+let _dragEndAt = 0;   // a drag let go over the backdrop must not close the panel
+function settingsBackdropClick(e) {
+  if (e.target === e.currentTarget && Date.now() - _dragEndAt > 400) closeSettings();
+}
 
 function makeDraggable(row, type) {
   const handle = row.querySelector('.stt-drag-handle');
   if (!handle) return;
 
-  handle.addEventListener('mousedown', e => {
-    if (e.button !== 0) return;
+  handle.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault();
+    // keep what's been typed: the rows are rebuilt from the drafts after the drop
+    if (type === 'slots') syncSlotsDraft(); else syncMinesDraft();
     _dragRow  = row;
     _dragType = type;
 
@@ -4314,8 +4629,10 @@ function makeDraggable(row, type) {
     };
 
     const onUp = ev => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onUp);
+      _dragEndAt = Date.now();
 
       // Clear all transforms immediately before re-render
       getRows().forEach(r => { r.style.transform = ''; });
@@ -4335,7 +4652,7 @@ function makeDraggable(row, type) {
       const insertIdx = lastInsertIdx < 0 ? rows.length : lastInsertIdx;
 
       if (dragIdx !== insertIdx && dragIdx !== insertIdx - 1) {
-        const arr = type === 'slots' ? appSettings.slots : appSettings.mines;
+        const arr = type === 'slots' ? _slotsDraft : _minesDraft;
         const [moved] = arr.splice(dragIdx, 1);
         const insertAt = insertIdx > dragIdx ? insertIdx - 1 : insertIdx;
         arr.splice(insertAt, 0, moved);
@@ -4346,8 +4663,9 @@ function makeDraggable(row, type) {
       _dragRow = null; _dragType = null;
     };
 
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+    document.addEventListener('pointercancel', onUp);
   });
 }
 
@@ -4360,7 +4678,7 @@ async function loadSettingsFromGitHub() {
     if (!res.ok) return;
     const data = await res.json();
     _settingsSha = data.sha;
-    const parsed = JSON.parse(atob(data.content.replace(/\n/g,'')));
+    const parsed = JSON.parse(b64ToText(data.content));
     // Merge — new schema takes priority
     if (parsed.slots) appSettings.slots = parsed.slots;
     if (parsed.mines) appSettings.mines = parsed.mines;
@@ -4368,6 +4686,7 @@ async function loadSettingsFromGitHub() {
     if (parsed.sheetName)  appSettings.sheetName  = parsed.sheetName;
     if (parsed.sheetRange) appSettings.sheetRange = parsed.sheetRange;
     if (parsed.scriptUrl) { appSettings.scriptUrl = parsed.scriptUrl; SHEET_WEBAPP_URL = parsed.scriptUrl; }
+    _settingsLoaded = true;
     buildDynamicMaps(); // rebuild colliery→CF mapping from loaded settings
   } catch(e) { /* use defaults */ }
 }
@@ -4378,6 +4697,8 @@ function openSettings() {
   document.getElementById('cfg_sheetName').value  = appSettings.sheetName  || 'Rake and Road Despatch';
   document.getElementById('cfg_sheetRange').value = appSettings.sheetRange || 'I6:O28';
   document.getElementById('cfg_scriptUrl').value  = appSettings.scriptUrl  || SHEET_WEBAPP_URL;
+  _slotsDraft = JSON.parse(JSON.stringify(appSettings.slots || []));
+  _minesDraft = JSON.parse(JSON.stringify(appSettings.mines || []));
   renderSlotsTable();
   renderMinesTable();
   document.getElementById('settingsStatus').textContent = '';
@@ -4386,12 +4707,54 @@ function openSettings() {
 
 function closeSettings() {
   document.getElementById('settingsOverlay').style.display = 'none';
+  _slotsDraft = null; _minesDraft = null;
+}
+
+// The panel edits copies of the slots and rows; Save writes them, Cancel drops them.
+let _slotsDraft = null, _minesDraft = null;
+
+// what's typed in the rows, back into the drafts (before a row is added, moved or removed)
+function syncSlotsDraft() {
+  if (!_slotsDraft) return;
+  document.querySelectorAll('#slotsTableBody .stt-slot-row').forEach(row => {
+    const d = _slotsDraft[+row.dataset.idx]; if (!d) return;
+    const timeEl = row.querySelector('[data-field="time"] input[type="hidden"]');
+    const autoEl = row.querySelector('[data-field="autoFrom"] input[type="hidden"]');
+    const colEl  = row.querySelector('[data-field="col"]');
+    if (timeEl) d.time = timeEl.value.trim();
+    if (autoEl) d.autoFrom = autoEl.value.trim();
+    if (colEl)  d.col = colEl.value.trim().toUpperCase();
+  });
+}
+function syncMinesDraft() {
+  if (!_minesDraft) return;
+  document.querySelectorAll('#minesTableBody .stt-mine-row').forEach(row => {
+    const d = _minesDraft[+row.dataset.idx]; if (!d) return;
+    row.querySelectorAll('input[data-field]').forEach(inp => {
+      if (inp.disabled) return;
+      const f = inp.dataset.field;
+      d[f] = f === 'sheetRow' ? (parseInt(inp.value) || 0) : inp.value.trim();
+    });
+  });
+}
+
+// Which rows are collieries in no coalfield: after the last CF row, or below MCL.
+function looseRowIdx(list) {
+  const loose = new Set();
+  let pending = [], pastGrand = false;
+  list.forEach((m, i) => {
+    if (m.isGrandTotal) { pastGrand = true; pending.forEach(j => loose.add(j)); pending = []; return; }
+    if (m.isTotal) { if (!pastGrand) pending = []; return; }
+    if (pastGrand) loose.add(i); else pending.push(i);
+  });
+  pending.forEach(j => loose.add(j));
+  return loose;
 }
 
 function renderSlotsTable() {
   const wrap = document.getElementById('slotsTableBody');
   wrap.innerHTML = '';
-  (appSettings.slots || []).forEach((slot, i) => {
+  (_slotsDraft || []).forEach((slot, i) => {
     const row = document.createElement('div');
     row.className = 'stt-slot-row';
     row.dataset.idx = i;
@@ -4428,39 +4791,66 @@ function renderSlotsTable() {
   });
 }
 
+function escAttr(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
 function renderMinesTable() {
   const wrap = document.getElementById('minesTableBody');
   wrap.innerHTML = '';
-  (appSettings.mines || []).forEach((mine, i) => {
-    const isSpecial = mine.isTotal || mine.isGrandTotal;
+  const list = _minesDraft || [];
+  const loose = looseRowIdx(list);
+  list.forEach((mine, i) => {
+    const isCF = !!mine.isTotal, isGrand = !!mine.isGrandTotal, isLoose = loose.has(i);
     const row = document.createElement('div');
-    row.className = 'stt-mine-row' + (isSpecial ? ' is-total' : '');
+    row.className = 'stt-mine-row' + (isCF ? ' is-total' : '') + (isGrand ? ' is-grand' : '') + (isLoose ? ' is-loose' : '');
     row.dataset.idx = i;
+    if (isLoose) row.title = 'In no coalfield — drag it above a CF row';
     const dh = document.createElement('div');
-    dh.className = 'stt-drag-handle'; dh.innerHTML = '☰'; dh.title = 'Drag to reorder';
+    dh.className = 'stt-drag-handle'; dh.innerHTML = isLoose ? '⚠' : '☰'; dh.title = isLoose ? 'In no coalfield — drag to move' : 'Drag to reorder';
     row.appendChild(dh);
-    if (isSpecial) {
+    const rowNo = `<input class="stt-cell-input mono" type="number" data-mine="${i}" data-field="sheetRow" value="${mine.sheetRow > 0 ? mine.sheetRow : ''}" min="1" max="999">`;
+    if (isGrand) {
       row.insertAdjacentHTML('beforeend', `
-        <div class="stt-total-label">${mine.label || ''}</div>
-        <input class="stt-cell-input mono" data-mine="${i}" data-field="colCodes" value="" disabled style="color:var(--dim);opacity:.4;">
-        <input class="stt-cell-input mono" type="number" data-mine="${i}" data-field="sheetRow" value="${mine.sheetRow > 0 ? mine.sheetRow : ''}" min="1" max="999">
-        <input class="stt-cell-input" data-mine="${i}" data-field="collieryName" value="${mine.collieryName || ''}" disabled style="opacity:.4;">
+        <div class="stt-total-label">${escAttr(mine.label)}</div>
+        <input class="stt-cell-input mono" value="" disabled style="color:var(--dim);opacity:.4;">
+        ${rowNo}
+        <input class="stt-cell-input" value="${escAttr(mine.collieryName)}" disabled style="opacity:.4;">
         <div style="width:28px;"></div>`);
+    } else if (isCF) {
+      row.insertAdjacentHTML('beforeend', `
+        <input class="stt-cell-input cf-name" data-mine="${i}" data-field="label" value="${escAttr(mine.label)}" title="Coalfield name">
+        <input class="stt-cell-input mono" value="" disabled style="color:var(--dim);opacity:.4;" title="A coalfield row sums the collieries above it">
+        ${rowNo}
+        <input class="stt-cell-input" data-mine="${i}" data-field="collieryName" value="${escAttr(mine.collieryName)}" title="Description, e.g. IB Coalfield Total">
+        <button class="stt-del-btn" onclick="deleteMine(${i})" title="Delete coalfield">✕</button>`);
     } else {
       row.insertAdjacentHTML('beforeend', `
-        <input class="stt-cell-input" data-mine="${i}" data-field="label" value="${mine.label || ''}" >
-        <input class="stt-cell-input mono" data-mine="${i}" data-field="colCodes" value="${mine.colCodes || ''}" >
-        <input class="stt-cell-input mono" type="number" data-mine="${i}" data-field="sheetRow" value="${mine.sheetRow > 0 ? mine.sheetRow : ''}" min="1" max="999">
-        <input class="stt-cell-input" data-mine="${i}" data-field="collieryName" value="${mine.collieryName || ''}" >
+        <input class="stt-cell-input" data-mine="${i}" data-field="label" value="${escAttr(mine.label)}">
+        <input class="stt-cell-input mono" data-mine="${i}" data-field="colCodes" value="${escAttr(mine.colCodes)}">
+        ${rowNo}
+        <input class="stt-cell-input" data-mine="${i}" data-field="collieryName" value="${escAttr(mine.collieryName)}">
         <button class="stt-del-btn" onclick="deleteMine(${i})" title="Delete row">✕</button>`);
     }
     makeDraggable(row, 'mines');
     wrap.appendChild(row);
   });
+  // the warning over the table
+  const warn = document.getElementById('looseWarn');
+  if (warn) {
+    const names = [...loose].map(j => {
+      const m = list[j];
+      return `${m.collieryName || m.label || 'New row'}${m.colCodes ? ' (' + m.colCodes + ')' : ''}`;
+    });
+    warn.textContent = names.length
+      ? `⚠ ${names.length === 1 ? '1 colliery is' : names.length + ' collieries are'} in no coalfield: ${names.join(', ')}. ` +
+        `${names.length === 1 ? 'It counts' : 'They count'} in MCL only — drag ☰ to put ${names.length === 1 ? 'it' : 'each'} above a CF row.`
+      : '';
+    warn.className = 'stt-loose-warn' + (names.length ? ' show' : '');
+  }
 }
 
 function addSlot() {
-  appSettings.slots.push({ label: '', time: '', col: '' });
+  syncSlotsDraft();
+  _slotsDraft.push({ label: '', time: '', col: '' });
   renderSlotsTable();
   // Focus the new time input
   const rows = document.querySelectorAll('#slotsTableBody .stt-slot-row');
@@ -4468,30 +4858,49 @@ function addSlot() {
 }
 
 function deleteSlot(i) {
-  if (appSettings.slots.length <= 3) { alert('Minimum 3 time slots required.'); return; }
+  syncSlotsDraft();
+  if (_slotsDraft.length <= 3) { alert('Minimum 3 time slots required.'); return; }
   if (!confirm('Delete this time slot?')) return;
-  appSettings.slots.splice(i, 1);
+  _slotsDraft.splice(i, 1);
   renderSlotsTable();
 }
 
 function addMine() {
-  // Insert before the last MCL grand total row
-  const insertAt = appSettings.mines.findIndex(m => m.isGrandTotal);
+  // Insert before the MCL row (a new colliery starts in no coalfield until dragged into one)
+  syncMinesDraft();
+  const insertAt = _minesDraft.findIndex(m => m.isGrandTotal);
   const newMine = { label: '', colCodes: '', sheetRow: 0, collieryName: '' };
-  if (insertAt >= 0) appSettings.mines.splice(insertAt, 0, newMine);
-  else appSettings.mines.push(newMine);
+  if (insertAt >= 0) _minesDraft.splice(insertAt, 0, newMine);
+  else _minesDraft.push(newMine);
   renderMinesTable();
-  // Focus the new label input
   const rows = document.querySelectorAll('#minesTableBody .stt-mine-row');
   const newRow = rows[insertAt >= 0 ? insertAt : rows.length - 1];
-  if (newRow) newRow.querySelector('input').focus();
+  if (newRow) { newRow.scrollIntoView({ block: 'nearest' }); newRow.querySelector('input').focus(); }
+}
+
+// A coalfield row sums every colliery above it, back to the previous coalfield row.
+function addCF() {
+  syncMinesDraft();
+  const insertAt = _minesDraft.findIndex(m => m.isGrandTotal);
+  const cf = { label: '', colCodes: '', sheetRow: 0, collieryName: '', isTotal: true };
+  if (insertAt >= 0) _minesDraft.splice(insertAt, 0, cf);
+  else _minesDraft.push(cf);
+  renderMinesTable();
+  const rows = document.querySelectorAll('#minesTableBody .stt-mine-row');
+  const newRow = rows[insertAt >= 0 ? insertAt : rows.length - 1];
+  if (newRow) { newRow.scrollIntoView({ block: 'nearest' }); newRow.querySelector('input').focus(); }
 }
 
 function deleteMine(i) {
-  const mine = appSettings.mines[i];
-  if (mine.isTotal || mine.isGrandTotal) { alert('Subtotal/total rows cannot be deleted.'); return; }
-  if (!confirm(`Delete "${mine.label || 'this row'}"?`)) return;
-  appSettings.mines.splice(i, 1);
+  syncMinesDraft();
+  const mine = _minesDraft[i];
+  if (!mine || mine.isGrandTotal) { alert('The MCL total row cannot be deleted.'); return; }
+  if (mine.isTotal) {
+    const next = _minesDraft.slice(i + 1).find(m => m.isTotal || m.isGrandTotal);
+    const where = next && next.isTotal ? `the next coalfield below (${next.label || 'unnamed'})` : 'no coalfield (MCL only)';
+    if (!confirm(`Delete coalfield "${mine.label || 'unnamed'}"?\nThe collieries above it will then belong to ${where}.`)) return;
+  } else if (!confirm(`Delete "${mine.label || 'this row'}"?`)) return;
+  _minesDraft.splice(i, 1);
   renderMinesTable();
 }
 
@@ -4509,23 +4918,19 @@ function collectSettingsFromDOM() {
   });
 
   // Collect mines
+  syncMinesDraft();
   const mines = [];
-  document.querySelectorAll('#minesTableBody .stt-mine-row').forEach(row => {
-    const i = parseInt(row.dataset.idx);
-    const orig = appSettings.mines[i] || {};
-    const isSpecial = orig.isTotal || orig.isGrandTotal;
-    const labelEl = row.querySelector('[data-field="label"]');
-    const label = isSpecial ? (orig.label || '') : (labelEl ? labelEl.value.trim() : '');
-    const colCodesEl = row.querySelector('[data-field="colCodes"]');
-    const colCodes = (colCodesEl && !colCodesEl.disabled) ? colCodesEl.value.trim() : (orig.colCodes || '');
-    const sheetRow = parseInt(row.querySelector('[data-field="sheetRow"]').value) || 0;
-    const collieryNameEl = row.querySelector('[data-field="collieryName"]');
-    const collieryName = (collieryNameEl && !collieryNameEl.disabled) ? collieryNameEl.value.trim() : (orig.collieryName || '');
-    if (label) {
-      const entry = { label, colCodes, sheetRow, collieryName };
-      if (orig.isTotal)      entry.isTotal = true;
-      if (orig.isGrandTotal) entry.isGrandTotal = true;
+  (_minesDraft || []).forEach(d => {
+    const label = String(d.label || '').trim();
+    const colCodes = String(d.colCodes || '').trim();
+    const sheetRow = parseInt(d.sheetRow) || 0;
+    const collieryName = String(d.collieryName || '').trim();
+    if (d.isTotal || d.isGrandTotal) {
+      const entry = { label, colCodes: '', sheetRow, collieryName };
+      if (d.isTotal) entry.isTotal = true; else entry.isGrandTotal = true;
       mines.push(entry);
+    } else if (label || colCodes) {
+      mines.push({ label: label || collieryName || colCodes, colCodes, sheetRow, collieryName });
     }
   });
 
@@ -4565,16 +4970,38 @@ async function saveSettings() {
   const rowNums = newSettings.mines.filter(m => m.sheetRow > 0).map(m => m.sheetRow);
   const dupRows = rowNums.filter((r, i) => rowNums.indexOf(r) !== i);
   if (dupRows.length) { status.textContent = 'Duplicate row numbers: ' + [...new Set(dupRows)].join(', '); status.style.color = '#e05'; return; }
+  // Coalfields: named, above MCL, names not repeated
+  const grandAt = newSettings.mines.findIndex(m => m.isGrandTotal);
+  const cfs = newSettings.mines.filter(m => m.isTotal);
+  if (cfs.some(m => !m.label)) { status.textContent = 'Every coalfield (CF) row needs a name.'; status.style.color = '#e05'; return; }
+  if (grandAt >= 0 && newSettings.mines.some((m, i) => m.isTotal && i > grandAt)) {
+    status.textContent = 'Coalfield rows must sit above the MCL row.'; status.style.color = '#e05'; return;
+  }
+  const cfNames = cfs.map(m => m.label.toUpperCase());
+  const dupCf = cfNames.filter((n, i) => cfNames.indexOf(n) !== i);
+  if (dupCf.length) { status.textContent = 'Coalfield name used twice: ' + [...new Set(dupCf)].join(', '); status.style.color = '#e05'; return; }
+  // A colliery code in two rows would be counted twice
+  const seenCode = {};
+  for (const m of newSettings.mines) for (const c of codesOf(m)) {
+    if (seenCode[c]) { status.textContent = `Code ${c} is in two rows (${seenCode[c]}, ${m.label}).`; status.style.color = '#e05'; return; }
+    seenCode[c] = m.label;
+  }
 
   try {
-    // Always get latest SHA to avoid 409 conflicts
+    // Always read the latest file first: it gives the SHA (no 409s), and the keys
+    // other apps keep in it (Road Power Report's powerReport…) are written back untouched.
     const shaRes = await fetch(
-      `${SETTINGS_GH.api}/repos/${SETTINGS_GH.owner}/${SETTINGS_GH.repo}/contents/${SETTINGS_GH.path}`,
-      { headers: { Authorization: 'token ' + SETTINGS_GH.token } }
+      `${SETTINGS_GH.api}/repos/${SETTINGS_GH.owner}/${SETTINGS_GH.repo}/contents/${SETTINGS_GH.path}?ref=${SETTINGS_GH.branch}&t=${Date.now()}`,
+      { headers: { Authorization: 'token ' + SETTINGS_GH.token, Accept: 'application/vnd.github.v3+json' } }
     );
-    if (shaRes.ok) { const d = await shaRes.json(); _settingsSha = d.sha; }
+    let cloud = {};
+    if (shaRes.ok) {
+      const d = await shaRes.json(); _settingsSha = d.sha;
+      try { cloud = JSON.parse(b64ToText(d.content)) || {}; } catch (e) { cloud = {}; }
+    }
+    const merged = Object.assign({}, cloud, newSettings);
 
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(newSettings, null, 2))));
+    const content = textToB64(JSON.stringify(merged, null, 2));
     const body = { message: 'Update settings', content, branch: SETTINGS_GH.branch };
     if (_settingsSha) body.sha = _settingsSha;
     const res = await fetch(
@@ -4584,11 +5011,14 @@ async function saveSettings() {
     if (!res.ok) throw new Error('GitHub ' + res.status);
     const resp = await res.json();
     _settingsSha = resp.content.sha;
-    appSettings = newSettings;
+    _settingsLoaded = true;
+    appSettings = merged;
     buildDynamicMaps(); // rebuild colliery→CF mapping from new settings
     if (appSettings.scriptUrl) SHEET_WEBAPP_URL = appSettings.scriptUrl;
-    status.textContent = '✓ Saved'; status.style.color = 'var(--green)';
-    setTimeout(closeSettings, 1200);
+    if (allRows.length > 0) updateStats();
+    status.textContent = looseMines.length ? `✓ Saved · ${looseMines.length} colliery row${looseMines.length === 1 ? '' : 's'} still in no coalfield` : '✓ Saved';
+    status.style.color = looseMines.length ? 'var(--amber)' : 'var(--green)';
+    setTimeout(closeSettings, looseMines.length ? 2200 : 1200);
   } catch(e) {
     status.textContent = 'Save failed: ' + e.message;
     status.style.color = '#e05';
@@ -4596,14 +5026,16 @@ async function saveSettings() {
 }
 
 loadSettingsFromGitHub().then(() => {
+  _settingsReady = true;
   buildDynamicMaps(); // ensure maps are built with defaults if load fails
+  if (allRows.length > 0) updateStats();
   if (ssViewOn) { applyTableVisibility(); fetchAndRenderGSheet(); }
 });
 loadDbFromGitHub();
 </script>
 
 <!-- ═══════════════ SETTINGS MODAL ═══════════════ -->
-<div id="settingsOverlay" class="stt-overlay" onclick="if(event.target===this)closeSettings()">
+<div id="settingsOverlay" class="stt-overlay" onclick="settingsBackdropClick(event)">
   <div class="stt-panel">
 
     <div class="stt-header">
@@ -4662,8 +5094,12 @@ loadDbFromGitHub();
         <div class="stt-section" style="height:100%;">
           <div class="stt-section-hdr">
             <label class="stt-label">Sheet Rows / Collieries</label>
-            <button class="stt-add-btn" onclick="addMine()">+ Add Row</button>
+            <div class="stt-btn-row">
+              <button class="stt-add-btn" onclick="addCF()" title="Add a coalfield total row">+ Add CF</button>
+              <button class="stt-add-btn" onclick="addMine()" title="Add a colliery row">+ Add Row</button>
+            </div>
           </div>
+          <div class="stt-loose-warn" id="looseWarn" role="status"></div>
           <div class="stt-mines-wrap">
             <div class="stt-mines-head">
               <span></span>
@@ -4675,7 +5111,7 @@ loadDbFromGitHub();
             </div>
             <div id="minesTableBody"></div>
           </div>
-          <div class="stt-hint">Codes: comma-separated for combined rows (e.g. 5151,5150). Leave blank for subtotal/total rows.</div>
+          <div class="stt-hint">Each colliery belongs to the first coalfield (CF) row below it — drag ☰ to move rows. Collieries below the last CF, or under MCL, are in no coalfield: they count in MCL only. Codes: comma-separated for combined rows (e.g. 5151,5150); leave blank on CF and MCL rows.</div>
         </div>
       </div>
 
