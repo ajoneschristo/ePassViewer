@@ -1639,7 +1639,7 @@ body.dark {
     <p>Mahanadi Coalfields Limited</p>
   </div>
   <div class="header-date" id="headerDate"></div>
-  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B115-prod</span>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:.5;letter-spacing:.04em;flex-shrink:0;align-self:flex-end;padding-bottom:2px;" title="Build ID">v4-B116-prod</span>
   <button class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
     <svg id="iconSunHeader" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--amber)">
       <circle cx="12" cy="12" r="4" stroke-width="2"/>
@@ -1695,6 +1695,7 @@ body.dark {
       </button>
     </div>
   </div>
+  <div class="unknown-banner loose-banner" id="looseBannerDrop" role="status" style="width:100%;max-width:400px;box-sizing:border-box;"></div>
   <p class="privacy-note"></p>
 
   <!-- Sheet view on home screen (shown when Sheet toggle ON, no file needed) -->
@@ -1984,10 +1985,11 @@ function buildDynamicMaps() {
 }
 
 // ── New colliery codes: added to Settings under MCL ─────
-// A DO whose colliery code is in no Settings row puts a new row for that
-// colliery below the MCL row — here at once, and in the cloud settings file
-// (only that row is added to what is there). Settings and the report screen
-// warn until the row is moved into a coalfield.
+// Any colliery code in the DO Database that no Settings row has gets a new row
+// for that colliery below the MCL row — here at once, and in the cloud settings
+// file (only that row is added to what is there). Both screens and Settings
+// warn until the row is moved into a coalfield. Nothing about any colliery is
+// written into the app: the DO Database finds them, Settings places them.
 let _newCollCodes  = new Set();   // codes added this session (the banner calls them new)
 let _settingsReady = false;       // the cloud settings have been read (or failed to be)
 let _settingsLoaded = false;      // ...and read successfully, so they may be written back
@@ -1999,6 +2001,19 @@ function decodeEnt(s) {
     .replace(/\s+/g, ' ').trim();
 }
 function codesOf(m) { return String((m && m.colCodes) || '').split(',').map(c => c.trim()).filter(Boolean); }
+
+// Read the DO Database for colliery codes Settings doesn't have yet. Runs once
+// both the settings and the database are in, and again whenever either changes.
+function findNewCollieries() {
+  if (!_settingsReady || !mclhoCount) return;
+  const found = {};
+  for (const k in mclhoDB) {
+    const r = mclhoDB[k];
+    const code = String((r && r.collieryCode) || '').trim();
+    if (code && !codeToMine[code] && !found[code]) found[code] = r.collieryName || code;
+  }
+  if (Object.keys(found).length) addNewCollieries(found);
+}
 
 // found: { collieryCode: name from the DO list }
 function addNewCollieries(found) {
@@ -2059,23 +2074,26 @@ function textToB64(text) {
 function looseNames() {
   return looseMines.map(m => `${m.collieryName || m.label}${m.codes.length ? ' (' + m.codes.join(', ') + ')' : ''}`).join(', ');
 }
-// the report-screen banner and the dot on ⚙
+// the banners (landing and report screens) and the dot on ⚙
 function paintLooseWarnings() {
   const n = looseMines.length;
   document.querySelectorAll('button[onclick="openSettings()"]').forEach(b => {
     b.classList.toggle('warn-dot', n > 0);
     b.title = n ? `Settings — ${n} colliery${n === 1 ? '' : ' rows'} in no coalfield` : 'Settings';
   });
-  const ban = document.getElementById('looseBanner');
-  if (!ban) return;
-  if (!n) { ban.className = 'unknown-banner loose-banner'; ban.onclick = null; return; }
   const isNew = looseMines.some(m => m.codes.some(c => _newCollCodes.has(c)));
-  ban.innerHTML = (isNew ? `⚠ New colliery found: ${looseNames()} — added to Settings under MCL.`
-                         : `⚠ Not in any coalfield: ${looseNames()}.`)
+  const html = (isNew ? `⚠ New colliery in the DO Database: ${looseNames()} — added to Settings under MCL.`
+                      : `⚠ Not in any coalfield: ${looseNames()}.`)
     + ` It counts in MCL but in no coalfield total. <strong>Tap to put it in a coalfield.</strong>`;
-  ban.className = 'unknown-banner loose-banner show';
-  ban.style.cursor = 'pointer';
-  ban.onclick = openSettings;
+  ['looseBanner', 'looseBannerDrop'].forEach(id => {
+    const ban = document.getElementById(id);
+    if (!ban) return;
+    if (!n) { ban.className = 'unknown-banner loose-banner'; ban.onclick = null; return; }
+    ban.innerHTML = html;
+    ban.className = 'unknown-banner loose-banner show';
+    ban.style.cursor = 'pointer';
+    ban.onclick = openSettings;
+  });
 }
 
 const GH = {
@@ -2254,6 +2272,7 @@ async function loadDbFromGitHub() {
       mclhoCount = Object.keys(mclhoDB).length;
       _dbUpdated = json.updated || '';
       if (!_dbBusy) updateDbStatus(false);
+      findNewCollieries();
       // If despatch already loaded, re-run stats with restored DB
       if (allRows.length > 0) updateStats();
       return; // success — exit
@@ -2541,6 +2560,7 @@ async function readMclho(raw) {
   _dbBusy = false;
   await saveDbToGitHub({ recs, added, updated: updated + regraded });
 
+  findNewCollieries();
   // Re-run stats if despatch data is already loaded
   if (allRows.length > 0) updateStats();
 }
@@ -2838,7 +2858,6 @@ function updateStats() {
   const colAcc  = {};  // collieryCode → { g, t, trips }
   let unknownG = 0, unknownT = 0, unknownTrips = 0;
   const unknownDOs = new Set();
-  const newCodes = {};  // collieryCode → name, for codes Settings doesn't have
 
   function accCol(code, g, t) {
     if (!colAcc[code]) colAcc[code] = { g: 0, t: 0, trips: 0 };
@@ -2863,13 +2882,9 @@ function updateStats() {
         unknownG += g; unknownT += t; unknownTrips++;
       } else {
         accCol(colCode, g, t);
-        if (!codeToMine[colCode]) newCodes[colCode] = mclhoDB[doNum].collieryName || colCode;
       }
     }
   }
-
-  // Colliery codes no Settings row has: added under MCL (once the settings are read)
-  if (_settingsReady && Object.keys(newCodes).length) addNewCollieries(newCodes);
 
   // Unknown DO banner
   const banner = document.getElementById('unknownBanner');
@@ -4899,7 +4914,14 @@ function deleteMine(i) {
     const next = _minesDraft.slice(i + 1).find(m => m.isTotal || m.isGrandTotal);
     const where = next && next.isTotal ? `the next coalfield below (${next.label || 'unnamed'})` : 'no coalfield (MCL only)';
     if (!confirm(`Delete coalfield "${mine.label || 'unnamed'}"?\nThe collieries above it will then belong to ${where}.`)) return;
-  } else if (!confirm(`Delete "${mine.label || 'this row'}"?`)) return;
+  } else {
+    const inDb = new Set();
+    for (const k in mclhoDB) { const c = String((mclhoDB[k] || {}).collieryCode || '').trim(); if (c) inDb.add(c); }
+    const back = codesOf(mine).filter(c => inDb.has(c));
+    if (!confirm(`Delete "${mine.label || 'this row'}"?` + (back.length
+        ? `\nCode ${back.join(', ')} is in the DO Database, so it will come back under MCL after saving. To keep it out of the coalfield totals, leave it under MCL instead.`
+        : ''))) return;
+  }
   _minesDraft.splice(i, 1);
   renderMinesTable();
 }
@@ -5015,6 +5037,7 @@ async function saveSettings() {
     appSettings = merged;
     buildDynamicMaps(); // rebuild colliery→CF mapping from new settings
     if (appSettings.scriptUrl) SHEET_WEBAPP_URL = appSettings.scriptUrl;
+    findNewCollieries();   // a colliery row deleted while its code is in the DO Database comes back under MCL
     if (allRows.length > 0) updateStats();
     status.textContent = looseMines.length ? `✓ Saved · ${looseMines.length} colliery row${looseMines.length === 1 ? '' : 's'} still in no coalfield` : '✓ Saved';
     status.style.color = looseMines.length ? 'var(--amber)' : 'var(--green)';
@@ -5028,6 +5051,7 @@ async function saveSettings() {
 loadSettingsFromGitHub().then(() => {
   _settingsReady = true;
   buildDynamicMaps(); // ensure maps are built with defaults if load fails
+  findNewCollieries();
   if (allRows.length > 0) updateStats();
   if (ssViewOn) { applyTableVisibility(); fetchAndRenderGSheet(); }
 });
